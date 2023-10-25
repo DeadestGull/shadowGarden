@@ -66,36 +66,34 @@ class Player {
         {
             if (keys.get("r")==true)
             {
-                console.log(this.mode);
                 keys.set("r",false);
                 this.tempWall.orientation = (this.tempWall.orientation+1)%2;
             }
 
             if (this.tempWall.orientation == 0){
-                console.log(mouse.x,center.x);
-                this.tempWall.wall.position.x1 = Math.round((mouse.x+center.x-canvas.width/2-75/2)/75)*75;
-                this.tempWall.wall.position.x2 = Math.round((mouse.x+center.x-canvas.width/2-75/2)/75)*75+75;
-                this.tempWall.wall.position.y1 = Math.round((mouse.y+center.y-canvas.height/2)/75)*75;
-                this.tempWall.wall.position.y2 = Math.round((mouse.y+center.y-canvas.height/2)/75)*75;
+                this.tempWall.wall.position.x1 = Math.round((mouse.x+center.x-canvas.width/2-100/2)/100)*100;
+                this.tempWall.wall.position.x2 = Math.round((mouse.x+center.x-canvas.width/2-100/2)/100)*100+100;
+                this.tempWall.wall.position.y1 = Math.round((mouse.y+center.y-canvas.height/2)/100)*100;
+                this.tempWall.wall.position.y2 = Math.round((mouse.y+center.y-canvas.height/2)/100)*100;
             }
             if (this.tempWall.orientation == 1){
-                this.tempWall.wall.position.x1 = Math.round((mouse.x+center.x-canvas.width/2)/75)*75;
-                this.tempWall.wall.position.x2 = Math.round((mouse.x+center.x-canvas.width/2)/75)*75;
-                this.tempWall.wall.position.y1 = Math.round((mouse.y+center.y-canvas.height/2-75/2)/75)*75;
-                this.tempWall.wall.position.y2 = Math.round((mouse.y+center.y-canvas.height/2-75/2)/75)*75+75;
+                this.tempWall.wall.position.x1 = Math.round((mouse.x+center.x-canvas.width/2)/100)*100;
+                this.tempWall.wall.position.x2 = Math.round((mouse.x+center.x-canvas.width/2)/100)*100;
+                this.tempWall.wall.position.y1 = Math.round((mouse.y+center.y-canvas.height/2-100/2)/100)*100;
+                this.tempWall.wall.position.y2 = Math.round((mouse.y+center.y-canvas.height/2-100/2)/100)*100+100;
             }
 
 
-
+            let touchWall=false;
             if (keys.get("mouse")==true){
-                if (this.tempWall.wall.touchingPlayer(this)==false&&walls.forEach( a => 
-                    {
-                        if (JSON.stringify(a) == JSON.stringify(this.tempWall.wall))
-                            return true;
-                    })!=true)
+                if (this.tempWall.wall.touchingPlayer(this)==false)
                 {
-                    walls.push(this.tempWall.wall);
-                    this.tempWall.wall = new Wall();
+                    walls.forEach( a => {if (JSON.stringify(a.position) == JSON.stringify(this.tempWall.wall.position))touchWall = true;});
+                    if (touchWall==false)            
+                    {
+                        walls.push(this.tempWall.wall);
+                        this.tempWall.wall = new Wall();
+                    }
                 }
             }
 
@@ -213,7 +211,6 @@ class Wall{
 
 const p = new Player(canvas.width/2,canvas.height/2);
 let walls = [];
-walls.push (new Wall (-100,-100,100,100));
 function up (event)
 {
     keys.set(event.key.toLowerCase(),false);
