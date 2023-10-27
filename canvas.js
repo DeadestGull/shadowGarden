@@ -204,13 +204,33 @@ class Wall{
     
 }
 
+class Tree{
+    constructor(px,py,px2,py2)
+    {
+        this.position = {
+            x1:px,
+            y1:py,
+            x2:px2,
+            y2:py2,
+        }
+        this.health = 1000; 
+    }
+    draw (){
+        c.fillStyle = 'green';
+        c.fillRect(this.position.x1 - center.x + canvas.width/2, this.position.y1 - center.y + canvas.height/2, this.position.x2 - this.position.x1, this.position.y2 - this.position.y1);
+    }
+    addWalls (walls)
+    {
 
+    }
+}
 
     
 
 
 const p = new Player(canvas.width/2,canvas.height/2);
 let walls = [];
+let lifeTree = new Tree (500,500,700,700);
 function up (event)
 {
     keys.set(event.key.toLowerCase(),false);
@@ -239,9 +259,7 @@ function animate()
     c.clearRect(0,0,canvas.width,canvas.height)
     p.draw();
     walls.forEach( a => a.draw());
-
-    p.actions(walls);
-       
+    p.actions(walls);     
 }
 function gameSetUp()
 {
