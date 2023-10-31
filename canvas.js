@@ -53,12 +53,12 @@ class Player {
     }
     makeWalls (walls)
     {
-        if (keys.get("t")==true){
+        if (keys.get("1")==true){
             if (this.mode!="wall")
                 this.mode = "wall";
             else
                 this.mode = "none";
-            keys.set("t",false);
+            keys.set("1",false);
             keys.set('mouse',false);
         }
         
@@ -131,10 +131,10 @@ class Player {
 }
 
 class Wall{
-    constructor(px,py, px2, py2, draw) {
+    constructor(px,py, px2, py2, real) {
         let x = px;
         let y = py;
-        this.canDraw= draw;
+        this.real= real;
         this.position = {
             x1:x,
             y1:y,
@@ -150,13 +150,14 @@ class Wall{
          this.id = parseInt(""+0+this.position.x1+this.position.y1+this.position.x2+this.position.y2);
     }
     draw () {
-        if (!(this.canDraw==false))
+        if (!(this.real==false))
         {
             c.fillStyle = 'red';
             c.fillRect(this.position.x1 - this.thickness/2 - center.x + canvas.width/2, this.position.y1 - this.thickness/2 - center.y + canvas.height/2, this.position.x2 - this.position.x1 + this.thickness, this.position.y2 - this.position.y1 + this.thickness);
         }
     }
     collisionX(player){
+        if (!(this.real==false))
         if (player.position.y+player.dimensions.height>this.position.y1 - this.thickness/2  && player.position.y<this.position.y2 + this.thickness/2)
         {
             if (player.position.x + player.dimensions.width > this.position.x1 - this.thickness/2 && player.position.x + player.dimensions.width < this.position.x1 + this.thickness/2) //left
@@ -170,6 +171,7 @@ class Wall{
         }
     }
     collisionY(player){
+        if (!(this.real==false))
         if (player.position.x+player.dimensions.width>this.position.x1 - this.thickness/2  && player.position.x<this.position.x2 + this.thickness/2)
         {
             if (player.position.y + player.dimensions.height > this.position.y1 - this.thickness/2 && player.position.y + player.dimensions.height < this.position.y1 + this.thickness/2) //top
@@ -210,9 +212,8 @@ class Wall{
     }
     
 }
-
-class Tree{
-    constructor(px,py,w,h)
+class Obsticle{
+    constructor(px,py,w,h,health)
     {
         this.position = {
             x:px,
@@ -222,18 +223,24 @@ class Tree{
             width:w,
             height:h
         }
-        this.health = 1000;
+        this.health = health;
     }
     draw (){
         c.fillStyle = 'green';
-        c.fillRect(this.position.x - center.x + canvas.width/2, this.position.y - center.y + canvas.height/2, this.dimensions.width, this.dimensions.height);
+        c.strokeRect(this.position.x - center.x + canvas.width/2, this.position.y - center.y + canvas.height/2, this.dimensions.width, this.dimensions.height);
+    }  
+}
+class Tree extends Obsticle{
+    constructor(px,py,w,h)
+    {
+        super(px,py,w,h,1000);
     }
     makeWalls(walls)
     {
         
-        for( let x= this.position.x; x < this.position.x+this.dimensions.width; x+=100)
+        for( let x= this.position.x-50; x < this.position.x+this.dimensions.width; x+=100)
         {
-            for ( let y = this.position.y; y < this.position.y+this.dimensions.height; y+=100)
+            for ( let y = this.position.y-50; y < this.position.y+this.dimensions.height; y+=100)
             {
                 if (y >  this.position.y && y < this.position.y+this.dimensions.height)
                 {
@@ -251,7 +258,6 @@ class Tree{
         }
     }
 }
-
 function addWall(walls, wall){
     let start = 0, end = walls.length-1;
     while (start <= end){
@@ -263,6 +269,8 @@ function addWall(walls, wall){
             end = mid-1;
 
     }
+    
+
     walls.push(wall)
     walls.sort(compareID);
     return true;
@@ -275,7 +283,7 @@ function compareID (a,b)
 
 const p = new Player(10000,10000);
 let walls = [];
-let lifeTree = new Tree (10100,10100,200,200);
+let lifeTree = new Tree (10050,10050,200,200);
 lifeTree.makeWalls(walls);
 console.log(walls);
 function up (event)
