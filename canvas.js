@@ -40,7 +40,7 @@ class Player {
         this.speed = 3;
         this.tempWall = {
             orientation : 0, 
-            wall : new Wall(0,0,0,0,true),
+            wall : new Wall(0,0,0,0,true,true),
         };
     }
     draw () {
@@ -84,7 +84,6 @@ class Player {
             }
 
 
-            let touchWall=false;
             if (keys.get("mouse")==true){
                 this.tempWall.wall.makeID();
                 if (this.tempWall.wall.touchingPlayer(this)==false&&addWall(walls,this.tempWall.wall))
@@ -118,12 +117,13 @@ class Player {
             this.position.x+=this.speed;
         if (keys.get("a")==true && keys.get("d")==false)//move left
             this.position.x-=this.speed;
-        walls.forEach( a => a.collisionX(this)); 
+        wallsX.forEach( a => a.collisionX(this));
+
         if (keys.get("w")==true && keys.get("s")==false)//move up
             this.position.y-=this.speed;
         if (keys.get("s")==true && keys.get("w")==false)//move down
             this.position.y+=this.speed;
-        walls.forEach( a => a.collisionY(this)); 
+        wallsY.forEach( a => a.collisionY(this)); 
 
         center.x = this.position.x + this.dimensions.width/2;
         center.y = this.position.y + this.dimensions.height/2;
@@ -131,10 +131,11 @@ class Player {
 }
 
 class Wall{
-    constructor(px,py, px2, py2, real) {
+    constructor(px,py, px2, py2, see, touch) {
         let x = px;
         let y = py;
-        this.real= real;
+        this.see= see;
+        this.touch=touch;
         this.position = {
             x1:x,
             y1:y,
@@ -150,14 +151,14 @@ class Wall{
          this.id = parseInt(""+0+this.position.x1+this.position.y1+this.position.x2+this.position.y2);
     }
     draw () {
-        if (!(this.real==false))
+        if (!(this.see==false))
         {
             c.fillStyle = 'red';
             c.fillRect(this.position.x1 - this.thickness/2 - center.x + canvas.width/2, this.position.y1 - this.thickness/2 - center.y + canvas.height/2, this.position.x2 - this.position.x1 + this.thickness, this.position.y2 - this.position.y1 + this.thickness);
         }
     }
     collisionX(player){
-        if (!(this.real==false))
+        if (!(this.touch==false))
         if (player.position.y+player.dimensions.height>this.position.y1 - this.thickness/2  && player.position.y<this.position.y2 + this.thickness/2)
         {
             if (player.position.x + player.dimensions.width > this.position.x1 - this.thickness/2 && player.position.x + player.dimensions.width < this.position.x1 + this.thickness/2) //left
@@ -171,7 +172,7 @@ class Wall{
         }
     }
     collisionY(player){
-        if (!(this.real==false))
+        if (!(this.touch==false))
         if (player.position.x+player.dimensions.width>this.position.x1 - this.thickness/2  && player.position.x<this.position.x2 + this.thickness/2)
         {
             if (player.position.y + player.dimensions.height > this.position.y1 - this.thickness/2 && player.position.y + player.dimensions.height < this.position.y1 + this.thickness/2) //top
@@ -237,20 +238,31 @@ class Tree extends Obsticle{
     }
     makeWalls(walls)
     {
-        
+        let temp = new Wall(this.position.x, this.position.y, this.position.x + this.dimensions.width, this.position.y,false, true);
+        temp.makeID();
+        addWall(walls,temp);
+        temp = new Wall(this.position.x, this.position.y, this.position.x , this.position.y+ this.dimensions.height,false, true);
+        temp.makeID();
+        addWall(walls,temp);
+        temp = new Wall(this.position.x, this.position.y+ this.dimensions.height, this.position.x + this.dimensions.width, this.position.y+ this.dimensions.height,false, true);
+        temp.makeID();
+        addWall(walls,temp);
+        temp = new Wall(this.position.x + this.dimensions.width, this.position.y, this.position.x + this.dimensions.width , this.position.y+ this.dimensions.height,false, true);
+        temp.makeID();
+        addWall(walls,temp);
         for( let x= this.position.x-50; x < this.position.x+this.dimensions.width; x+=100)
         {
             for ( let y = this.position.y-50; y < this.position.y+this.dimensions.height; y+=100)
             {
                 if (y >  this.position.y && y < this.position.y+this.dimensions.height)
                 {
-                    let temp =  new Wall(x,y,x+100,y,false);
+                    temp =  new Wall(x,y,x+100,y,false,false);
                     temp.makeID();
                     addWall(walls,temp);
                 }
                 if (x > this.position.x && this.position.x+this.dimensions.width)
                 {
-                    let temp =  new Wall(x,y,x,y+100,false);
+                    temp =  new Wall(x,y,x,y+100,false,false);
                     temp.makeID();
                     addWall(walls,temp);
                 }
@@ -271,7 +283,11 @@ function addWall(walls, wall){
     }
     
 
-    walls.push(wall)
+    walls.push(wall);
+    wallsX.push(wall);
+    wallsY.push(wall);
+    wallsX.sort(compareX);
+    wallsY.sort(compareY);
     walls.sort(compareID);
     return true;
 }
@@ -280,12 +296,20 @@ function compareID (a,b)
 {
     return a.id - b.id;
 }
-
+function compareX (a,b)
+{
+    return a.position.x - b.position.x;
+}
+function compareY (a,b)
+{
+    return a.position.y - b.position.y;
+}
 const p = new Player(10000,10000);
 let walls = [];
+let wallsX = [];
+let wallsY = [];
 let lifeTree = new Tree (10050,10050,200,200);
 lifeTree.makeWalls(walls);
-console.log(walls);
 function up (event)
 {
     keys.set(event.key.toLowerCase(),false);
