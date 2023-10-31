@@ -1,5 +1,4 @@
-var canvas = document.querySelector('canvas');
-resizeCanvas();
+
 function resizeCanvas() {
     canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
     canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -16,15 +15,7 @@ let mouse = {
     x : 0,
     y : 0,
 }
-let keys = new Map();
-keys.set('a',false);
-keys.set('d',false);
-keys.set('s',false);
-keys.set('w',false);
-keys.set('t',false);
-keys.set('r',false);
-keys.set('mouse',false);
-var c =canvas.getContext("2d");
+
 class Player {
     constructor(px, py) {
         this.position = {
@@ -236,6 +227,11 @@ class Tree extends Obsticle{
     {
         super(px,py,w,h,1000);
     }
+    draw ()
+    {
+        c.fillStyle = 'green';
+        c.fillRect(this.position.x - center.x + canvas.width/2, this.position.y - center.y + canvas.height/2, this.dimensions.width, this.dimensions.height);
+    }
     makeWalls(walls)
     {
         let temp = new Wall(this.position.x, this.position.y, this.position.x + this.dimensions.width, this.position.y,false, true);
@@ -304,12 +300,7 @@ function compareY (a,b)
 {
     return a.position.y - b.position.y;
 }
-const p = new Player(10000,10000);
-let walls = [];
-let wallsX = [];
-let wallsY = [];
-let lifeTree = new Tree (10050,10050,200,200);
-lifeTree.makeWalls(walls);
+
 function up (event)
 {
     keys.set(event.key.toLowerCase(),false);
@@ -359,4 +350,27 @@ function gameSetUp()
     window.onload = window.onresize = resizeCanvas;
     animate();
 }
+
+
+
+const keys = new Map();
+keys.set('a',false);
+keys.set('d',false);
+keys.set('s',false);
+keys.set('w',false);
+keys.set('t',false);
+keys.set('r',false);
+keys.set('mouse',false);
+var canvas = document.querySelector('canvas');
+var c =canvas.getContext("2d");
+
+resizeCanvas();
+
+const p = new Player(10000,10000);
+const walls = [];
+const wallsX = [];
+const wallsY = [];
+const lifeTree = new Tree (10050,10050,200,200);
+lifeTree.makeWalls(walls);
+
 gameSetUp();
