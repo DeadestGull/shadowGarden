@@ -220,17 +220,6 @@ class Obsticle{
     draw (){
         c.fillStyle = 'green';
         c.strokeRect(this.position.x - center.x + canvas.width/2, this.position.y - center.y + canvas.height/2, this.dimensions.width, this.dimensions.height);
-    }  
-}
-class Tree extends Obsticle{
-    constructor(px,py,w,h)
-    {
-        super(px,py,w,h,1000);
-    }
-    draw ()
-    {
-        c.fillStyle = 'green';
-        c.fillRect(this.position.x - center.x + canvas.width/2, this.position.y - center.y + canvas.height/2, this.dimensions.width, this.dimensions.height);
     }
     makeWalls(walls)
     {
@@ -265,6 +254,18 @@ class Tree extends Obsticle{
             }
         }
     }
+}
+class Tree extends Obsticle{
+    constructor(px,py,w,h)
+    {
+        super(px,py,w,h,1000);
+    }
+    draw ()
+    {
+        c.fillStyle = 'green';
+        c.fillRect(this.position.x - center.x + canvas.width/2, this.position.y - center.y + canvas.height/2, this.dimensions.width, this.dimensions.height);
+    }
+    
 }
 function addWall(walls, wall){
     let start = 0, end = walls.length-1;
@@ -374,3 +375,5 @@ const lifeTree = new Tree (10050,10050,200,200);
 lifeTree.makeWalls(walls);
 
 gameSetUp();
+
+
