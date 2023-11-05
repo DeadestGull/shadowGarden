@@ -235,9 +235,9 @@ class Obsticle{
         temp = new Wall(this.position.x + this.dimensions.width, this.position.y, this.position.x + this.dimensions.width , this.position.y+ this.dimensions.height,false, true);
         temp.makeID();
         addWall(walls,temp);
-        for( let x= this.position.x-50; x < this.position.x+this.dimensions.width; x+=100)
+        for( let x= Math.floor(this.position.x/100)*100; x < this.position.x+this.dimensions.width; x+=100)
         {
-            for ( let y = this.position.y-50; y < this.position.y+this.dimensions.height; y+=100)
+            for ( let y = Math.floor(this.position.y/100)*100; y < this.position.y+this.dimensions.height; y+=100)
             {
                 if (y >  this.position.y && y < this.position.y+this.dimensions.height)
                 {
