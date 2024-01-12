@@ -1,31 +1,11 @@
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-}
-let center = {
-    x : 0,
-    y : 0,
-}
-let materials = {
-    coins : 0,
-    wood : 0, 
-}
-let mouse = {
-    x : 0,
-    y : 0,
-}
-
 class Player {
     constructor(px, py) {
         this.position = {
             x:px,
             y:py,
         }
-        this.dimensions ={
-            width : 50,
-            height : 50,
-        }
+        this.width = 50;
+        this.height = 50;
         this.direction = "left";
         this.mode = "none";
         this.speed = 3;
@@ -36,7 +16,7 @@ class Player {
     }
     draw () {
         c.fillStyle = 'red';
-        c.fillRect( canvas.width/2 - this.dimensions.width/2, canvas.height/2 - this.dimensions.height/2, this.dimensions.width, this.dimensions.height);
+        c.fillRect( canvas.width/2 - this.width/2, canvas.height/2 - this.height/2, this.width, this.height);
     }
     actions(walls) {
         this.move (walls);
@@ -109,15 +89,16 @@ class Player {
         if (keys.get("a")==true && keys.get("d")==false)//move left
             this.position.x-=this.speed;
         wallsX.forEach( a => a.collisionX(this));
-
+        onScreenElements.forEach( a => a.collisionX(this));
         if (keys.get("w")==true && keys.get("s")==false)//move up
             this.position.y-=this.speed;
         if (keys.get("s")==true && keys.get("w")==false)//move down
             this.position.y+=this.speed;
         wallsY.forEach( a => a.collisionY(this)); 
+        onScreenElements.forEach( a => a.collisionY(this));
 
-        center.x = this.position.x + this.dimensions.width/2;
-        center.y = this.position.y + this.dimensions.height/2;
+        center.x = this.position.x + this.width/2;
+        center.y = this.position.y + this.height/2;
     }
 }
 
@@ -150,11 +131,11 @@ class Wall{
     }
     collisionX(player){
         if (!(this.touch==false))
-        if (player.position.y+player.dimensions.height>this.position.y1 - this.thickness/2  && player.position.y<this.position.y2 + this.thickness/2)
+        if (player.position.y+player.height>this.position.y1 - this.thickness/2  && player.position.y<this.position.y2 + this.thickness/2)
         {
-            if (player.position.x + player.dimensions.width > this.position.x1 - this.thickness/2 && player.position.x + player.dimensions.width < this.position.x1 + this.thickness/2) //left
+            if (player.position.x + player.width > this.position.x1 - this.thickness/2 && player.position.x + player.width < this.position.x1 + this.thickness/2) //left
             {
-                player.position.x = this.position.x1 - this.thickness/2 - player.dimensions.height;
+                player.position.x = this.position.x1 - this.thickness/2 - player.height;
             }
             if (player.position.x > this.position.x1 - this.thickness/2 && player.position.x < this.position.x2 + this.thickness/2) //right
             {
@@ -164,11 +145,11 @@ class Wall{
     }
     collisionY(player){
         if (!(this.touch==false))
-        if (player.position.x+player.dimensions.width>this.position.x1 - this.thickness/2  && player.position.x<this.position.x2 + this.thickness/2)
+        if (player.position.x+player.width>this.position.x1 - this.thickness/2  && player.position.x<this.position.x2 + this.thickness/2)
         {
-            if (player.position.y + player.dimensions.height > this.position.y1 - this.thickness/2 && player.position.y + player.dimensions.height < this.position.y1 + this.thickness/2) //top
+            if (player.position.y + player.height > this.position.y1 - this.thickness/2 && player.position.y + player.height < this.position.y1 + this.thickness/2) //top
             {
-                player.position.y = this.position.y1 - this.thickness/2 - player.dimensions.height;
+                player.position.y = this.position.y1 - this.thickness/2 - player.height;
             }
             if (player.position.y > this.position.y1 - this.thickness/2 && player.position.y < this.position.y2 + this.thickness/2) //bottom
             {
@@ -178,9 +159,9 @@ class Wall{
     }
     touchingPlayer(player)
     {
-        if (player.position.x+player.dimensions.width>this.position.x1 - this.thickness/2  && player.position.x<this.position.x2 + this.thickness/2)
+        if (player.position.x+player.width>this.position.x1 - this.thickness/2  && player.position.x<this.position.x2 + this.thickness/2)
         {
-            if (player.position.y + player.dimensions.height > this.position.y1 - this.thickness/2 && player.position.y + player.dimensions.height < this.position.y1 + this.thickness/2) //top
+            if (player.position.y + player.height > this.position.y1 - this.thickness/2 && player.position.y + player.height < this.position.y1 + this.thickness/2) //top
             {
                 return true;
             }
@@ -189,13 +170,13 @@ class Wall{
                 return true;
             }
         }
-        if (player.position.y+player.dimensions.height>this.position.y1 - this.thickness/2  && player.position.y<this.position.y2 + this.thickness/2)
+        if (player.position.y+player.height>this.position.y1 - this.thickness/2  && player.position.y<this.position.y2 + this.thickness/2)
         {
-            if (player.position.x + player.dimensions.width > this.position.x1 - this.thickness/2 && player.position.x + player.dimensions.width < this.position.x1 + this.thickness/2) //left
+            if (player.position.x + player.width > this.position.x1 - this.thickness/2 && player.position.x + player.width < this.position.x1 + this.thickness/2) //left
             {
                 return true;
             }
-            if (player.position.x + player.dimensions.width> this.position.x1 - this.thickness/2 && player.position.x < this.position.x2 + this.thickness/2) //right
+            if (player.position.x + player.width> this.position.x1 - this.thickness/2 && player.position.x < this.position.x2 + this.thickness/2) //right
             {
                 return true;
             }
@@ -204,69 +185,349 @@ class Wall{
     }
     
 }
-class Obsticle{
-    constructor(px,py,w,h,health)
+let lastTree = 0;
+let lastFlower = 0;
+let lastFlowerFarm = 0;
+class Tile{
+    constructor(x1,y1,objects)
     {
+
         this.position = {
-            x:px,
-            y:py,
-        }
-        this.dimensions = {
-            width:w,
-            height:h
-        }
-        this.health = health;
+            x:x1,
+            y:y1,
+        };
+        this.assignType();
+        if (objects != null)
+            this.objects = objects;
+        else
+            this.objects = [];
     }
-    draw (){
-        c.fillStyle = 'green';
-        c.strokeRect(this.position.x - center.x + canvas.width/2, this.position.y - center.y + canvas.height/2, this.dimensions.width, this.dimensions.height);
-    }
-    makeWalls(walls)
+    draw()
     {
-        let temp = new Wall(this.position.x, this.position.y, this.position.x + this.dimensions.width, this.position.y,false, true);
-        temp.makeID();
-        addWall(walls,temp);
-        temp = new Wall(this.position.x, this.position.y, this.position.x , this.position.y+ this.dimensions.height,false, true);
-        temp.makeID();
-        addWall(walls,temp);
-        temp = new Wall(this.position.x, this.position.y+ this.dimensions.height, this.position.x + this.dimensions.width, this.position.y+ this.dimensions.height,false, true);
-        temp.makeID();
-        addWall(walls,temp);
-        temp = new Wall(this.position.x + this.dimensions.width, this.position.y, this.position.x + this.dimensions.width , this.position.y+ this.dimensions.height,false, true);
-        temp.makeID();
-        addWall(walls,temp);
-        for( let x= Math.floor(this.position.x/100)*100; x < this.position.x+this.dimensions.width; x+=100)
+        c.fillStyle = 'green';
+        c.fillRect(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2,101,101);
+        onScreenElements.push(...this.objects);
+    }
+    makeID()
+    {
+        this.id = ""+this.position.x+"a"+this.position.y;
+        return this.id;
+    }
+    assignType()
+    {
+        lastTree++;
+        lastFlower++;
+        lastFlowerFarm++;
+    }
+}
+class LifeTree {
+    constructor(x,y)
+    {
+        this.position ={
+            x:x,
+            y:y,
+        };
+        this.size = 100; 
+    }
+    draw()
+    {     
+        if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
+        {        
+            c.fillStyle = 'rgb(52,141,44)';;
+            c.beginPath();
+            c.arc(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2, this.size, 0, 2 * Math.PI);
+            c.fill();
+        }
+        else
+            drawElementsAfter.push(this);
+    }
+    
+    /*
+        p.position.x  //player x
+        p.position.y  //player y
+        p.size
+        this.position.x
+        this.position.y
+        this.size 
+    */
+    collisionX()
+    {
+        if (p.position.y+p.height>this.position.y-this.size && p.position.y<this.position.y + this.size)
         {
-            for ( let y = Math.floor(this.position.y/100)*100; y < this.position.y+this.dimensions.height; y+=100)
+            if (p.position.x + p.width > this.position.x -this.size && p.position.x + p.width < this.position.x + this.size) //left
             {
-                if (y >  this.position.y && y < this.position.y+this.dimensions.height)
-                {
-                    temp =  new Wall(x,y,x+100,y,false,false);
-                    temp.makeID();
-                    addWall(walls,temp);
-                }
-                if (x > this.position.x && this.position.x+this.dimensions.width)
-                {
-                    temp =  new Wall(x,y,x,y+100,false,false);
-                    temp.makeID();
-                    addWall(walls,temp);
-                }
+                p.position.x = this.position.x - p.height-this.size;
+            }
+            if (p.position.x > this.position.x && p.position.x < this.position.x + this.size) //right
+            {
+                p.position.x = this.position.x + this.size;
+            }
+        }
+    }
+    collisionY()
+    {
+        if (p.position.x+p.width>this.position.x-this.size && p.position.x<this.position.x + this.size)
+        {
+            if (p.position.y + p.height > this.position.y -this.size && p.position.y + p.height < this.position.y + this.size) //left
+            {
+                p.position.y = this.position.y - p.height-this.size;
+            }
+            if (p.position.y > this.position.y && p.position.y < this.position.y + this.size) //right
+            {
+                p.position.y = this.position.y + this.size;
             }
         }
     }
 }
-class Tree extends Obsticle{
-    constructor(px,py,w,h)
+class Tree{
+    constructor(x,y)
     {
-        super(px,py,w,h,1000);
+        this.position ={
+            x:x,
+            y:y,
+        };
+        this.size = 60; 
     }
-    draw ()
+    draw()
     {
-        c.fillStyle = 'green';
-        c.fillRect(this.position.x - center.x + canvas.width/2, this.position.y - center.y + canvas.height/2, this.dimensions.width, this.dimensions.height);
+        if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
+        {        
+            c.fillStyle = 'rgb(55,79,47)';
+            c.beginPath();
+            c.arc(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2, this.size, 0, 2 * Math.PI);
+            c.fill();
+        }
+        else
+            drawElementsAfter.push(this);
     }
-    
+   
+    collisionX()
+    {
+        if (p.position.y+p.height>this.position.y-this.size && p.position.y<this.position.y + this.size)
+        {
+            if (p.position.x + p.width > this.position.x -this.size && p.position.x + p.width < this.position.x + this.size) //left
+            {
+                p.position.x = this.position.x - p.height-this.size;
+            }
+            if (p.position.x > this.position.x && p.position.x < this.position.x + this.size) //right
+            {
+                p.position.x = this.position.x + this.size;
+            }
+        }
+    }
+    collisionY()
+    {
+        if (p.position.x+p.width>this.position.x-this.size && p.position.x<this.position.x + this.size)
+        {
+            if (p.position.y + p.height > this.position.y -this.size && p.position.y + p.height < this.position.y + this.size) //left
+            {
+                p.position.y = this.position.y - p.height-this.size;
+            }
+            if (p.position.y > this.position.y && p.position.y < this.position.y + this.size) //right
+            {
+                p.position.y = this.position.y + this.size;
+            }
+        }
+    }
+    isTouchingPlayer(margin)
+    {
+        return Math.min(p.position.x+p.width+margin, this.position.x-this.size+margin) > Math.max(p.position.x-margin, this.position.x-this.size-margin) && Math.min(p.position.y+p.height+margin, this.position.y+this.size+margin) > Math.max(this.position.y+margin, this.position.y-this.size+margin);
+    }
 }
+class Flower{
+    constructor(x,y)
+    {
+        this.position = 
+        {
+            x:y,
+            y:y,
+        }
+        this.size = 25;
+        this.pickupFrames = 150;
+        this.isTouchingPlayer = false;
+    }
+    draw()
+    {
+        if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
+        {        
+            c.fillStyle = 'rgb(55,79,47)';
+            c.fillRect(this.position.x,this.position.y,this.size,this.size);
+        }
+        else
+            drawElementsAfter.push(this);
+    }
+}
+class Weed{
+    constructor(x,y) {
+        this.nutrients = 0;
+        this.path, this.dir = undefined; 
+        this.x = x;
+        this.y = y;
+        this.vines = [];
+    }
+    makePath(){
+        let dir = "";
+        let vines = [];
+        let tempX = this.x;
+        let tempY = this.y;
+
+        const lifeTreeWidth = 100;
+        const lifeTreeHeight = 100;
+        if (Math.abs(lifeTree.position.x - this.x) > Math.abs(lifeTree.position.y - this.y))
+        {
+            if (lifeTree.position.x > this.x)
+            {
+                dir = "right";
+                tempX+=50;
+                vines.push({x:tempX, y:tempY,});
+                while (tempX>lifeTree.position.x+lifeTreeWidth/2)
+                {
+                    tempX+=100;
+                    vines.push({x:tempX, y:tempY,});
+                }
+            }
+            else
+            {
+                dir = "left";
+                tempX-=50;
+                vines.push({x:tempX, y:tempY,});
+                while (tempX<lifeTree.position.x+lifeTreeWidth/2)
+                {
+                    tempX-=100;
+                    vines.push({x:tempX, y:tempY,});
+                }
+            }
+            if (lifeTree.position.y + lifeTreeHeight> tempY)
+                while (lifeTree.position.y > tempY)
+                {
+                    tempY+=100;
+                    vines.push({x:tempX, y:tempY,});
+                }
+            else
+                while (lifeTree.position.y + lifeTreeHeight< tempY)
+                {   
+                    tempY-=100;
+                    vines.push({x:tempX, y:tempY,});
+                }
+        }
+        else
+        {
+            if (lifeTree.position.y + lifeTreeHeight> this.y)
+            {
+                dir = "down"
+                tempY+=50;
+                vines.push({x:tempX, y:tempY,});
+                while (lifeTree.position.y + lifeTreeHeight> tempY)
+                {
+                    tempY+=100;
+                    vines.push({x:tempX, y:tempY,});
+                }
+            }
+            else
+            {
+                dir = "up"
+                tempY-=50;
+                vines.push({x:tempX, y:tempY,});
+                while (lifeTree.position.y + lifeTreeHeight< tempY)
+                {   
+                    tempY-=100;
+                    vines.push({x:tempX, y:tempY,});
+                }
+            }
+            if (lifeTree.position.x+lifeTreeWidth/2 > tempX)
+                while (tempX<lifeTree.position.x)
+                {
+                    tempX+=100;
+                    vines.push({x:tempX, y:tempY,});
+                }
+            else
+                while (tempX>lifeTree.position.x+lifeTreeWidth/2)
+                {
+                    tempX-=100;
+                    vines.push({x:tempX, y:tempY,});
+                }     
+        }
+        this.path=vines;
+        this.dir=dir;
+    }
+    makeVines(){
+        console.log(this.vines);
+        if (this.path == []&& this.nutrients == 100)
+            this.nutrients--;
+        else if (this.nutrients>50 && this.path != [])
+        {
+            if (this.vines.length == 0){
+                let dir = "";
+                let vine = this.path.shift();
+                if (vine.x > this.path[0].x)
+                    dir = "left";
+                if (vine.x < this.path[0].x)
+                    dir = "right";
+                if (vine.y > this.path[0].y)
+                    dir = "up";
+                if (vine.y < this.path[0].y)
+                    dir = "down";
+                this.vines.push(new Vine(vine.x,vine.y,dir));
+            }
+            else if (this.vines[this.vines.length-1].nutrients==100)
+            {
+                let dir = ""
+                let vine = this.path.shift();
+                if (vine.x > this.path[0].x)
+                    dir = "left";
+                if (vine.x < this.path[0].x)
+                    dir = "right";
+                if (vine.y > this.path[0].y)
+                    dir = "up";
+                if (vine.y < this.path[0].y)
+                    dir = "down";
+                this.vines.push(new Vine(vine.x,vine.y,dir));
+            }
+            else 
+                this.vines[this.vines.length-1].nutrients +=1;
+        }
+        else if (this.path != [])
+            this.nutrients += 1;
+    }
+    draw(){
+        
+        c.fillStyle = 'yellow';
+        if (this.dir == "up")
+            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2 - this.nutrients, 20 , 20+ this.nutrients);
+        if (this.dir == "down")
+            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2, 20 , 20+ this.nutrients);
+        if (this.dir == "left")
+            c.fillRect(this.x-10 - center.x + canvas.width/2 - this.nutrients, this.y-10 - center.y + canvas.height/2 , 20 + this.nutrients, 20);
+        if (this.dir == "right")
+            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2, 20 + this.nutrients, 20);
+        this.vines.forEach(a => a.draw());
+    }
+}
+class Vine{
+    constructor(x,y,dir){
+        this.x = x;
+        this.y = y;
+        this.dir = dir;
+        this.nutrients = 0;
+    }
+    draw()
+    {
+        c.fillStyle = 'yellow';
+        if (this.dir == "up")
+            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2 - this.nutrients, 20 , 20+ this.nutrients);
+        if (this.dir == "down")
+            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2, 20 , 20+ this.nutrients);
+        if (this.dir == "left")
+            c.fillRect(this.x-10 - center.x + canvas.width/2 - this.nutrients, this.y-10 - center.y + canvas.height/2 , 20 + this.nutrients, 20);
+        if (this.dir == "right")
+            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2, 20 + this.nutrients, 20);
+    }
+    touchingPlayer()
+    {
+        
+    }
+}
+
 function addWall(walls, wall){
     let start = 0, end = walls.length-1;
     while (start <= end){
@@ -288,7 +549,6 @@ function addWall(walls, wall){
     walls.sort(compareID);
     return true;
 }
-
 function compareID (a,b)
 {
     return a.id - b.id;
@@ -301,7 +561,6 @@ function compareY (a,b)
 {
     return a.position.y - b.position.y;
 }
-
 function up (event)
 {
     keys.set(event.key.toLowerCase(),false);
@@ -323,23 +582,59 @@ function follow (event)
     mouse.x = event.offsetX;
     mouse.y = event.offsetY;
 }
-
+function renderTiles()
+{
+    for(let x = Math.floor((center.x - canvas.width/2)/100)*100-100; x< Math.ceil((center.x + canvas.width/2)/100)*100+100; x+=100)
+    {
+        for(let y = Math.floor((center.y - canvas.height/2)/100)*100-100; y< Math.ceil((center.y + canvas.height/2)/100)*100+100; y+=100)
+        {
+            if (tiles.get( ""+x+"a"+y) == undefined)
+            {
+                let tempTile = new Tile(x,y,null);
+                tempTile.makeID();
+                tiles.set(tempTile.id, tempTile);
+            }
+            else
+            {
+                tiles.get(""+x+"a"+y).draw();
+            }
+        }
+    }
+    let i = 0;
+    for (let x = p.position.x; i < 2; x+=50)
+    {    
+        let k = 0;
+        for (let y=p.position.y; k < 2; y+=50)
+        {
+            if (tilesTouching.indexOf(tiles.get(""+Math.floor(x/100)*100+"a"+Math.floor(y/100)*100)) == -1)
+                tilesTouching.push(tiles.get(""+Math.floor(x/100)*100+"a"+Math.floor(y/100)*100));
+            k++;
+        }
+        i++;
+    }
+}
 function animate()
 {
     
     const start = performance.now();
-    window.requestAnimationFrame(animate)
     c.clearRect(0,0,canvas.width,canvas.height)
-    
+    renderTiles();
+
+    onScreenElements.forEach(a=> a.draw());
     p.draw();
     walls.forEach( a => a.draw());
-    lifeTree.draw();
+    weeds.forEach( a => a.draw());
 
-    p.actions(walls);
+    p.actions();
+    weeds.forEach(a => a.makeVines());
+
+    drawElementsAfter.forEach(a=> a.draw());
+
+    drawElementsAfter.length=0;
+    onScreenElements.length=0;
+    tilesTouching.length=0;
 
     const end = performance.now();
-    //console.log(`Execution time: ${end - start} ms`);
-
 }
 function gameSetUp()
 {
@@ -349,11 +644,17 @@ function gameSetUp()
     addEventListener("keyup",up);
     addEventListener("keydown",down);
     window.onload = window.onresize = resizeCanvas;
-    animate();
+    setInterval(animate,16);
+}
+function resizeCanvas() {
+    canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 }
 
 
-
+let center = {x : 0,y : 0,}
+let materials = {wood : 0}
+let mouse = {x : 0,y : 0,}
 const keys = new Map();
 keys.set('a',false);
 keys.set('d',false);
@@ -362,6 +663,16 @@ keys.set('w',false);
 keys.set('t',false);
 keys.set('r',false);
 keys.set('mouse',false);
+const tiles = new Map();
+const ltree = [new LifeTree(10100,10100)];
+const lifeTree = new Tile(10100,10100,ltree);
+const tree = [new Tree(10500, 10500)];
+const tileTree = new Tile (10500, 10500,tree);
+lifeTree.makeID();
+tileTree.makeID();
+tiles.set(lifeTree.id, lifeTree);
+tiles.set(tileTree.id, tileTree);
+
 var canvas = document.querySelector('canvas');
 var c =canvas.getContext("2d");
 
@@ -371,8 +682,14 @@ const p = new Player(10000,10000);
 const walls = [];
 const wallsX = [];
 const wallsY = [];
-const lifeTree = new Tree (10050,10050,200,200);
-lifeTree.makeWalls(walls);
+const flowers = [];
+const weeds = [];
+let onScreenElements = [];
+let tilesTouching = [];
+let drawElementsAfter = [];
+//weeds.push(new Weed(10550,10550));
+//weeds[0].makePath();
+//weeds[0].makeVines();
 
 gameSetUp();
 
