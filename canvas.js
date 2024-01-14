@@ -252,15 +252,15 @@ class LifeTree {
     */
     collisionX()
     {
-        if (p.position.y+p.height>this.position.y-this.size && p.position.y<this.position.y + this.size)
+        if (p.position.y+p.height>this.position.y && p.position.y<this.position.y +this.position.y)
         {
-            if (p.position.x + p.width > this.position.x -this.size && p.position.x + p.width < this.position.x + this.size) //left
+            if (p.position.x + p.width > this.position.x +this.size && p.position.x + p.width < this.position.x ) //left
             {
-                p.position.x = this.position.x - p.height-this.size;
+                p.position.x = this.position.x - p.height;
             }
-            if (p.position.x > this.position.x && p.position.x < this.position.x + this.size) //right
+            if (p.position.x > this.position.x  && p.position.x < this.position.x +this.size ) //right
             {
-                p.position.x = this.position.x + this.size;
+                p.position.x = this.position.x +this.size ;
             }
         }
     }
@@ -282,20 +282,19 @@ class LifeTree {
 class Tree{
     constructor(x,y)
     {
+        
         this.position ={
             x:x,
             y:y,
         };
-        this.size = 60; 
+        this.size = 100; 
     }
     draw()
     {
+        let image = document.getElementById("tree");
         if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
         {        
-            c.fillStyle = 'rgb(55,79,47)';
-            c.beginPath();
-            c.arc(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2, this.size, 0, 2 * Math.PI);
-            c.fill();
+            c.drawImage(image, this.position.x - center.x +canvas.width/2,this.position.y - center.y +canvas.height/2 - 45);
         }
         else
             drawElementsAfter.push(this);
@@ -303,11 +302,11 @@ class Tree{
    
     collisionX()
     {
-        if (p.position.y+p.height>this.position.y-this.size && p.position.y<this.position.y + this.size)
+        if (p.position.y+p.height>this.position.y && p.position.y<this.position.y + this.size)
         {
-            if (p.position.x + p.width > this.position.x -this.size && p.position.x + p.width < this.position.x + this.size) //left
+            if (p.position.x + p.width > this.position.x && p.position.x + p.width < this.position.x + this.size) //left
             {
-                p.position.x = this.position.x - p.height-this.size;
+                p.position.x = this.position.x - p.width;
             }
             if (p.position.x > this.position.x && p.position.x < this.position.x + this.size) //right
             {
@@ -317,15 +316,15 @@ class Tree{
     }
     collisionY()
     {
-        if (p.position.x+p.width>this.position.x-this.size && p.position.x<this.position.x + this.size)
+        if (p.position.x+p.width>this.position.x   && p.position.x<this.position.x + this.size)
         {
-            if (p.position.y + p.height > this.position.y -this.size && p.position.y + p.height < this.position.y + this.size) //left
+            if (p.position.y + p.height > this.position.y && p.position.y < this.position.y ) //top
             {
-                p.position.y = this.position.y - p.height-this.size;
+                p.position.y = this.position.y - p.height;
             }
-            if (p.position.y > this.position.y && p.position.y < this.position.y + this.size) //right
+            if (p.position.y > this.position.y && p.position.y < this.position.y +this.size) //bottom
             {
-                p.position.y = this.position.y + this.size;
+                p.position.y = this.position.y +this.size;
             }
         }
     }
@@ -548,6 +547,12 @@ function addWall(walls, wall){
     wallsY.sort(compareY);
     walls.sort(compareID);
     return true;
+}
+function randomGuass()
+{
+    const theta = 2 * Math.PI * Math.random();
+    const rho = Math.sqrt(-2 * Math.log(1 - Math.random()));
+    return (rho * Math.cos(theta)) / 10.0 + 0.5;
 }
 function compareID (a,b)
 {
