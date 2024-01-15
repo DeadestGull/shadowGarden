@@ -24,7 +24,7 @@ class Player {
     }
     makeWalls (walls)
     {
-        if (keys.get("q")==true){dsdq
+        if (keys.get("q")==true){
             if (this.mode!="wall")
                 this.mode = "wall";
             else
