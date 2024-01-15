@@ -241,18 +241,18 @@ class Tile{
         {
             let tempX = this.position.x;
             let tempY = this.position.y;
-            let randX = Math.random()*75;
+            let randX = Math.random()*50;
             if (tiles.has(this.position.x+100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
                 randX += Math.random()*100;
             if (tiles.has(this.position.x-100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
             {
                 randX += Math.random()*100;
-                randX -=50;
+                randX -=50;a
             }
-            let randY = Math.random*75;
-            tempY += randY;
             tempX +=randX;
             let temp = new Flower(tempX, tempY);
+            console.log(this.position.x,this.position.y,temp.position.x,temp.position.y);
+
             this.objects.push(temp);
             lastFlower = 0;
             nextFlower = generateNormallyDistributedRandom(7,15);
@@ -274,7 +274,7 @@ class LifeTree {
     }
     draw()
     {     
-        if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
+        if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
         {        
             c.fillStyle = 'rgb(52,141,44)';
             c.fillRect(this.position.x  - center.x +canvas.width/2 , this.position.y - center.y +canvas.height/2, this.width, this.height);
@@ -315,7 +315,7 @@ class Tree{
     draw()
     {
         let image = document.getElementById("tree");
-        if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
+        if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
         {        
             c.drawImage(image, this.position.x - center.x +canvas.width/2 -25,this.position.y - center.y +canvas.height/2 - 70);
         }
@@ -358,7 +358,7 @@ class Flower{
     {
         this.position = 
         {
-            x:y,
+            x:x,
             y:y,
         }
         this.size = 25;
@@ -370,8 +370,10 @@ class Flower{
     draw()
     {
         let image = document.getElementById("blue_flower");
-        if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
+        if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
         {        
+            c.fillStyle = "red";
+            c.fillRect(this.position.x,this.position.y,10,10);
             c.drawImage(image, this.position.x - center.x +canvas.width/2 ,this.position.y - center.y +canvas.height/2);
         }
         else
