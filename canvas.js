@@ -354,6 +354,17 @@ class Flower{
         else
             drawElementsAfter.push(this);
     }
+    pickup(tile)
+    {
+        //when e pressed for a certain amount of time and an object is touching the player it will remove the object from that the specific tile
+        // this.position.x/y gives position of object
+        //tiles.object.pop(this) removes current object
+        // isIntersecting( player right x, left x, top y, bottom y, object right x, object left x, object top y, object bottom y, 10);
+        // player is called p.position.x gets left and p.pos.y gets top y
+        // p.height + p.pos.y get bot y
+        // p.width + p.pos.x get right x
+        //same thing for object but its p.size
+    }
 }
 class Weed{
     constructor(x,y) {
