@@ -4,7 +4,7 @@ class Player {
             x:px,
             y:py,
         }
-        this.width = 50;
+        this.width = 30;
         this.height = 50;
         this.direction = "left";
         this.mode = "none";
@@ -24,12 +24,12 @@ class Player {
     }
     makeWalls (walls)
     {
-        if (keys.get("1")==true){
+        if (keys.get("q")==true){dsdq
             if (this.mode!="wall")
                 this.mode = "wall";
             else
                 this.mode = "none";
-            keys.set("1",false);
+            keys.set("q",false);
             keys.set('mouse',false);
         }
         
@@ -57,7 +57,7 @@ class Player {
 
             if (keys.get("mouse")==true){
                 this.tempWall.wall.makeID();
-                if (this.tempWall.wall.touchingPlayer(this)==false&&addWall(walls,this.tempWall.wall))
+                if (this.tempWall.wall.touchingPlayer(this)==false&&addWall(this.tempWall.wall))
                 {
                     this.tempWall.wall = new Wall();
                 }
@@ -135,7 +135,7 @@ class Wall{
         {
             if (player.position.x + player.width > this.position.x1 - this.thickness/2 && player.position.x + player.width < this.position.x1 + this.thickness/2) //left
             {
-                player.position.x = this.position.x1 - this.thickness/2 - player.height;
+                player.position.x = this.position.x1 - this.thickness/2 - player.width;
             }
             if (player.position.x > this.position.x1 - this.thickness/2 && player.position.x < this.position.x2 + this.thickness/2) //right
             {
@@ -187,20 +187,23 @@ class Wall{
 }
 let lastTree = 0;
 let lastFlower = 0;
-let lastFlowerFarm = 0;
+let lastForest = 0;
+let nextTree = generateNormallyDistributedRandom(10,19);
+let nextFlower = generateNormallyDistributedRandom(5,10);
+let nextForest = generateNormallyDistributedRandom(20,30);
 class Tile{
     constructor(x1,y1,objects)
     {
-
         this.position = {
             x:x1,
             y:y1,
         };
-        this.assignType();
         if (objects != null)
             this.objects = objects;
         else
             this.objects = [];
+        this.assignType();
+
     }
     draw()
     {
@@ -215,9 +218,27 @@ class Tile{
     }
     assignType()
     {
-        lastTree++;
-        lastFlower++;
-        lastFlowerFarm++;
+        if (nextTree == lastTree)
+        {
+            let tempX = this.position.x;
+            let tempY = this.position.y;
+            let randX = Math.random()*50;
+            if (tiles.has(this.position.x+100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
+                randX += Math.random()*100;
+            if (tiles.has(this.position.x-100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
+            {
+                randX += Math.random()*100;
+                randX -=100;
+            }
+            tempX +=randX;
+            let temp = new Tree(tempX, tempY);
+            this.objects.push(temp);
+            lastTree = 0;
+            nextTree = generateNormallyDistributedRandom(10,25);
+        }
+         lastTree++;
+         lastFlower++;
+         lastForest++;
     }
 }
 class LifeTree {
@@ -227,16 +248,15 @@ class LifeTree {
             x:x,
             y:y,
         };
-        this.size = 100; 
+        this.width = 200;
+        this.height = 200; 
     }
     draw()
     {     
         if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
         {        
-            c.fillStyle = 'rgb(52,141,44)';;
-            c.beginPath();
-            c.arc(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2, this.size, 0, 2 * Math.PI);
-            c.fill();
+            c.fillStyle = 'rgb(52,141,44)';
+            c.fillRect(this.position.x  - center.x +canvas.width/2 , this.position.y - center.y +canvas.height/2, this.width, this.height);
         }
         else
             drawElementsAfter.push(this);
@@ -252,31 +272,11 @@ class LifeTree {
     */
     collisionX()
     {
-        if (p.position.y+p.height>this.position.y && p.position.y<this.position.y +this.position.y)
-        {
-            if (p.position.x + p.width > this.position.x +this.size && p.position.x + p.width < this.position.x ) //left
-            {
-                p.position.x = this.position.x - p.height;
-            }
-            if (p.position.x > this.position.x  && p.position.x < this.position.x +this.size ) //right
-            {
-                p.position.x = this.position.x +this.size ;
-            }
-        }
+        
     }
     collisionY()
     {
-        if (p.position.x+p.width>this.position.x-this.size && p.position.x<this.position.x + this.size)
-        {
-            if (p.position.y + p.height > this.position.y -this.size && p.position.y + p.height < this.position.y + this.size) //left
-            {
-                p.position.y = this.position.y - p.height-this.size;
-            }
-            if (p.position.y > this.position.y && p.position.y < this.position.y + this.size) //right
-            {
-                p.position.y = this.position.y + this.size;
-            }
-        }
+       
     }
 }
 class Tree{
@@ -287,14 +287,16 @@ class Tree{
             x:x,
             y:y,
         };
-        this.size = 100; 
+        this.width = 50;
+        this.height = 100;
+        this.health = 50; 
     }
     draw()
     {
         let image = document.getElementById("tree");
         if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
         {        
-            c.drawImage(image, this.position.x - center.x +canvas.width/2,this.position.y - center.y +canvas.height/2 - 45);
+            c.drawImage(image, this.position.x - center.x +canvas.width/2 -25,this.position.y - center.y +canvas.height/2 - 45);
         }
         else
             drawElementsAfter.push(this);
@@ -302,36 +304,33 @@ class Tree{
    
     collisionX()
     {
-        if (p.position.y+p.height>this.position.y && p.position.y<this.position.y + this.size)
+        if (p.position.y+p.height>this.position.y && p.position.y<this.position.y + this.height)
         {
-            if (p.position.x + p.width > this.position.x && p.position.x + p.width < this.position.x + this.size) //left
+            if (p.position.x + p.width > this.position.x && p.position.x + p.width < this.position.x + this.width) //left
             {
                 p.position.x = this.position.x - p.width;
             }
-            if (p.position.x > this.position.x && p.position.x < this.position.x + this.size) //right
+            if (p.position.x > this.position.x && p.position.x < this.position.x + this.width) //right
             {
-                p.position.x = this.position.x + this.size;
+                p.position.x = this.position.x + this.width;
             }
         }
     }
     collisionY()
     {
-        if (p.position.x+p.width>this.position.x   && p.position.x<this.position.x + this.size)
+        if (p.position.x+p.width>this.position.x   && p.position.x<this.position.x + this.width)
         {
-            if (p.position.y + p.height > this.position.y && p.position.y < this.position.y ) //top
+            if (p.position.y + p.height > this.position.y && p.position.y < this.position.y) //top
             {
                 p.position.y = this.position.y - p.height;
             }
-            if (p.position.y > this.position.y && p.position.y < this.position.y +this.size) //bottom
+            if (p.position.y > this.position.y && p.position.y < this.position.y +this.height) //bottom
             {
-                p.position.y = this.position.y +this.size;
+                p.position.y = this.position.y +this.height;
             }
         }
     }
-    isTouchingPlayer(margin)
-    {
-        return Math.min(p.position.x+p.width+margin, this.position.x-this.size+margin) > Math.max(p.position.x-margin, this.position.x-this.size-margin) && Math.min(p.position.y+p.height+margin, this.position.y+this.size+margin) > Math.max(this.position.y+margin, this.position.y-this.size+margin);
-    }
+    
 }
 class Flower{
     constructor(x,y)
@@ -450,7 +449,6 @@ class Weed{
         this.dir=dir;
     }
     makeVines(){
-        console.log(this.vines);
         if (this.path == []&& this.nutrients == 100)
             this.nutrients--;
         else if (this.nutrients>50 && this.path != [])
@@ -527,7 +525,16 @@ class Vine{
     }
 }
 
-function addWall(walls, wall){
+function addWall(wall){
+    let intersect = false;
+    onScreenElements.forEach( a => {
+        if (isIntersecting(a.position.x, a.position.x+a.width,a.position.y, a.position.y+a.height,wall.position.x1 - wall.thickness/2, wall.position.x2+wall.thickness/2,wall.position.y1 - wall.thickness/2, wall.position.y2 +wall.thickness/2,-6))
+        {    
+            intersect = true;
+        }
+    })
+    if (intersect== true)
+        return false;
     let start = 0, end = walls.length-1;
     while (start <= end){
         let mid =Math.floor((start+end)/2);
@@ -547,12 +554,6 @@ function addWall(walls, wall){
     wallsY.sort(compareY);
     walls.sort(compareID);
     return true;
-}
-function randomGuass()
-{
-    const theta = 2 * Math.PI * Math.random();
-    const rho = Math.sqrt(-2 * Math.log(1 - Math.random()));
-    return (rho * Math.cos(theta)) / 10.0 + 0.5;
 }
 function compareID (a,b)
 {
@@ -586,6 +587,34 @@ function follow (event)
 {
     mouse.x = event.offsetX;
     mouse.y = event.offsetY;
+}
+function generateRandomNumber() {
+    const u1 = Math.random();
+    const u2 = Math.random();
+
+    const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+
+    return z0;
+}
+
+function generateNormallyDistributedRandom(x,y)
+{
+    const mean = (x + y) / 2;
+    const standardDeviation = (y - x) / 6; 
+
+    let value = 0;
+    do {
+
+        value = generateRandomNumber()* standardDeviation + mean;
+    } while (value < x || value > y);
+
+    return Math.round(value);
+
+}
+
+function isIntersecting (ax1,ax2,ay1,ay2,bx1,bx2,by1,by2,margin)
+{
+    return !(ax2 < bx1 - margin || ax1 > bx2 + margin || ay1 > by2 + margin || ay2 < by1 - margin) 
 }
 function renderTiles()
 {
@@ -626,6 +655,8 @@ function animate()
     renderTiles();
 
     onScreenElements.forEach(a=> a.draw());
+
+    
     p.draw();
     walls.forEach( a => a.draw());
     weeds.forEach( a => a.draw());
@@ -633,11 +664,13 @@ function animate()
     p.actions();
     weeds.forEach(a => a.makeVines());
 
+    tilesTouching.forEach(a => console.log (a));
+    
     drawElementsAfter.forEach(a=> a.draw());
-
     drawElementsAfter.length=0;
     onScreenElements.length=0;
     tilesTouching.length=0;
+
 
     const end = performance.now();
 }
@@ -673,6 +706,12 @@ const ltree = [new LifeTree(10100,10100)];
 const lifeTree = new Tile(10100,10100,ltree);
 const tree = [new Tree(10500, 10500)];
 const tileTree = new Tile (10500, 10500,tree);
+const t = []
+
+for (let x =10000; x<10400; x+=100)
+    for (let y = 10000; y<10400; y+=100)
+        t.push(new Tile(x,y,[null]))
+t.forEach(a=>{a.makeID;tiles.set(a,a.id)});
 lifeTree.makeID();
 tileTree.makeID();
 tiles.set(lifeTree.id, lifeTree);
@@ -695,7 +734,6 @@ let drawElementsAfter = [];
 //weeds.push(new Weed(10550,10550));
 //weeds[0].makePath();
 //weeds[0].makeVines();
-
 gameSetUp();
 
 
