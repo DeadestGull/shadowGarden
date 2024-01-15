@@ -89,13 +89,13 @@ class Player {
         if (keys.get("a")==true && keys.get("d")==false)//move left
             this.position.x-=this.speed;
         wallsX.forEach( a => a.collisionX(this));
-        onScreenElements.forEach( a => a.collisionX(this));
+        onScreenElements.forEach( a => {if(a!=null)a.collisionX(this)});
         if (keys.get("w")==true && keys.get("s")==false)//move up
             this.position.y-=this.speed;
         if (keys.get("s")==true && keys.get("w")==false)//move down
             this.position.y+=this.speed;
         wallsY.forEach( a => a.collisionY(this)); 
-        onScreenElements.forEach( a => a.collisionY(this));
+        onScreenElements.forEach( a => {if(a!=null)a.collisionY(this)});
 
         center.x = this.position.x + this.width/2;
         center.y = this.position.y + this.height/2;
@@ -189,7 +189,7 @@ let lastTree = 0;
 let lastFlower = 0;
 let lastForest = 0;
 let nextTree = generateNormallyDistributedRandom(10,19);
-let nextFlower = generateNormallyDistributedRandom(5,10);
+let nextFlower = generateNormallyDistributedRandom(7,15);
 let nextForest = generateNormallyDistributedRandom(20,30);
 class Tile{
     constructor(x1,y1,objects)
@@ -211,6 +211,7 @@ class Tile{
         c.fillRect(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2,101,101);
         onScreenElements.push(...this.objects);
     }
+
     makeID()
     {
         this.id = ""+this.position.x+"a"+this.position.y;
@@ -218,7 +219,7 @@ class Tile{
     }
     assignType()
     {
-        if (nextTree == lastTree)
+        if (nextTree <= lastTree)
         {
             let tempX = this.position.x;
             let tempY = this.position.y;
@@ -228,13 +229,33 @@ class Tile{
             if (tiles.has(this.position.x-100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
             {
                 randX += Math.random()*100;
-                randX -=100;
+                randX -=50;
             }
             tempX +=randX;
             let temp = new Tree(tempX, tempY);
             this.objects.push(temp);
             lastTree = 0;
             nextTree = generateNormallyDistributedRandom(10,25);
+        }
+        else if (nextFlower <= lastFlower)
+        {
+            let tempX = this.position.x;
+            let tempY = this.position.y;
+            let randX = Math.random()*75;
+            if (tiles.has(this.position.x+100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
+                randX += Math.random()*100;
+            if (tiles.has(this.position.x-100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
+            {
+                randX += Math.random()*100;
+                randX -=50;
+            }
+            let randY = Math.random*75;
+            tempY += randY;
+            tempX +=randX;
+            let temp = new Flower(tempX, tempY);
+            this.objects.push(temp);
+            lastFlower = 0;
+            nextFlower = generateNormallyDistributedRandom(7,15);
         }
          lastTree++;
          lastFlower++;
@@ -288,7 +309,7 @@ class Tree{
             y:y,
         };
         this.width = 50;
-        this.height = 100;
+        this.height = 75;
         this.health = 50; 
     }
     draw()
@@ -296,7 +317,7 @@ class Tree{
         let image = document.getElementById("tree");
         if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
         {        
-            c.drawImage(image, this.position.x - center.x +canvas.width/2 -25,this.position.y - center.y +canvas.height/2 - 45);
+            c.drawImage(image, this.position.x - center.x +canvas.width/2 -25,this.position.y - center.y +canvas.height/2 - 70);
         }
         else
             drawElementsAfter.push(this);
@@ -344,12 +365,14 @@ class Flower{
         this.pickupFrames = 150;
         this.isTouchingPlayer = false;
     }
+    collisionX(){}
+    collisionY(){}
     draw()
     {
+        let image = document.getElementById("blue_flower");
         if (this.position.y+this.size<p.position.y+5||drawElementsAfter.indexOf(this)>-1)
         {        
-            c.fillStyle = 'rgb(55,79,47)';
-            c.fillRect(this.position.x,this.position.y,this.size,this.size);
+            c.drawImage(image, this.position.x - center.x +canvas.width/2 ,this.position.y - center.y +canvas.height/2);
         }
         else
             drawElementsAfter.push(this);
@@ -665,7 +688,8 @@ function animate()
     c.clearRect(0,0,canvas.width,canvas.height)
     renderTiles();
 
-    onScreenElements.forEach(a=> a.draw());
+    onScreenElements.forEach(a=> {if(a!=null)
+                                    a.draw()});
 
     
     p.draw();
@@ -675,7 +699,6 @@ function animate()
     p.actions();
     weeds.forEach(a => a.makeVines());
 
-    tilesTouching.forEach(a => console.log (a));
     
     drawElementsAfter.forEach(a=> a.draw());
     drawElementsAfter.length=0;
@@ -715,18 +738,14 @@ keys.set('mouse',false);
 const tiles = new Map();
 const ltree = [new LifeTree(10100,10100)];
 const lifeTree = new Tile(10100,10100,ltree);
-const tree = [new Tree(10500, 10500)];
-const tileTree = new Tile (10500, 10500,tree);
 const t = []
 
 for (let x =10000; x<10400; x+=100)
     for (let y = 10000; y<10400; y+=100)
         t.push(new Tile(x,y,[null]))
-t.forEach(a=>{a.makeID;tiles.set(a,a.id)});
+t.forEach(a=>{a.makeID();tiles.set(a.id,a)});
 lifeTree.makeID();
-tileTree.makeID();
 tiles.set(lifeTree.id, lifeTree);
-tiles.set(tileTree.id, tileTree);
 
 var canvas = document.querySelector('canvas');
 var c =canvas.getContext("2d");
