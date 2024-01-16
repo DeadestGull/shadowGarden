@@ -355,7 +355,7 @@ class Tree{
 }
 class Flower{
     constructor(x,y)
-    {
+    {//aj is a loser
         this.position = 
         {
             x:x,
