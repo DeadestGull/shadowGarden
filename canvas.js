@@ -24,7 +24,7 @@ class Player {
     }
     makeWalls (walls)
     {
-        if (keys.get("q")==true){
+        if (keys.get("q")){
             if (this.mode!="wall")
                 this.mode = "wall";
             else
@@ -35,7 +35,7 @@ class Player {
         
         if (this.mode == "wall")
         {
-            if (keys.get("r")==true)
+            if (keys.get("r"))
             {
                 keys.set("r",false);
                 this.tempWall.orientation = (this.tempWall.orientation+1)%2;
@@ -55,7 +55,7 @@ class Player {
             }
 
 
-            if (keys.get("mouse")==true){
+            if (keys.get("mouse")){
                 this.tempWall.wall.makeID();
                 if (this.tempWall.wall.touchingPlayer(this)==false&&addWall(this.tempWall.wall))
                 {
@@ -84,15 +84,15 @@ class Player {
             else
                 this.direction = "up";
         //move
-        if (keys.get("d")==true && keys.get("a")==false)//move right
+        if (keys.get("d") && keys.get("a")==false)//move right
             this.position.x+=this.speed;
-        if (keys.get("a")==true && keys.get("d")==false)//move left
+        if (keys.get("a") && keys.get("d")==false)//move left
             this.position.x-=this.speed;
         wallsX.forEach( a => a.collisionX(this));
         onScreenElements.forEach( a => {if(a!=null)a.collisionX(this)});
-        if (keys.get("w")==true && keys.get("s")==false)//move up
+        if (keys.get("w") && keys.get("s")==false)//move up
             this.position.y-=this.speed;
-        if (keys.get("s")==true && keys.get("w")==false)//move down
+        if (keys.get("s") && keys.get("w")==false)//move down
             this.position.y+=this.speed;
         wallsY.forEach( a => a.collisionY(this)); 
         onScreenElements.forEach( a => {if(a!=null)a.collisionY(this)});
@@ -407,8 +407,8 @@ class Weed{
         let tempX = this.x;
         let tempY = this.y;
 
-        const lifeTreeWidth = 100;
-        const lifeTreeHeight = 100;
+        const lifeTreeWidth = 200;
+        const lifeTreeHeight = 200;
         if (Math.abs(lifeTree.position.x - this.x) > Math.abs(lifeTree.position.y - this.y))
         {
             if (lifeTree.position.x > this.x)
@@ -487,7 +487,43 @@ class Weed{
         this.dir=dir;
     }
     makeVines(){
-        if (this.path == []&& this.nutrients == 100)
+        let xdif1=0;
+        let xdif2=0;
+        let ydif1=0;
+
+        let ydif2=0;
+        console.log(this.vines);
+        if (this.vines!=[])
+        {
+        console.log(this.vines);
+
+        switch (this.vines[0].dir)
+        {
+            case 'left':
+                xdif2=-this.vines[0].nutrients
+                ydif1=-10;
+                ydif2=10;
+                break;
+            case 'right':
+                xdif2=this.vines[0].nutrients
+                ydif1=-10;
+                ydif2=10;
+                break;
+            case 'up':
+                ydif2=-this.vines[0].nutrients
+                xdif1=-10;
+                xdif2=10;
+                break;
+            case 'down':
+                ydif2=this.vines[0].nutrients
+                xdif1=-10;
+                xdif2=10;
+                break;
+        }
+        if (this.vines[0].x+xdif1, this.vines[0].x+xdif2,this.vines[0].y+ydif1,this.vines[0]+ydif2,lifeTree.position.x,lifeTree.position.x+lifeTree.width,lifeTree.position.y,lifeTree.position.y+lifeTree.height,-2)
+            lifeTree.health--;
+        }
+        else if (this.path == []&& this.nutrients == 100)
             this.nutrients--;
         else if (this.nutrients>50 && this.path != [])
         {
@@ -765,9 +801,9 @@ const weeds = [];
 let onScreenElements = [];
 let tilesTouching = [];
 let drawElementsAfter = [];
-//weeds.push(new Weed(10550,10550));
-//weeds[0].makePath();
-//weeds[0].makeVines();
+weeds.push(new Weed(10550,10550));
+weeds[0].makePath();
+weeds[0].makeVines();
 gameSetUp();
 
 
