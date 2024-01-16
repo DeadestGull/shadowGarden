@@ -251,7 +251,6 @@ class Tile{
             }
             tempX +=randX;
             let temp = new Flower(tempX, tempY);
-            console.log(this.position.x,this.position.y,temp.position.x,temp.position.y);
 
             this.objects.push(temp);
             lastFlower = 0;
@@ -391,6 +390,15 @@ class Flower{
         // p.height + p.pos.y get bot y
         // p.width + p.pos.x get right x
         //same thing for object but its p.size
+        if(keys.get("e") && isIntersecting(p.width+p.position.x , p.position.x , p.position.y , p.height+p.position.y , this.position.x+this.size , this.position.x,this.position.y , this.position.y+this.size, 10))
+        {
+            this.timer++;
+            if (this.timer>=this.pickupTime)
+            {
+                    tiles.object.pop(this);
+                    this.timer=0;
+            }
+        }
     }
 }
 class Weed{
