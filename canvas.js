@@ -364,6 +364,8 @@ class Flower{
         this.size = 25;
         this.pickupFrames = 150;
         this.isTouchingPlayer = false;
+        this.timer=0;
+        this.pickupTime=100; 
     }
     collisionX(){}
     collisionY(){}
