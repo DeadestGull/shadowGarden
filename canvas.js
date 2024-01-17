@@ -22,6 +22,15 @@ class Player {
         this.move (walls);
         this.makeWalls(walls);
     }
+    drawWall ()
+    {
+        if (this.mode == "wall")
+        {
+            c.globalAlpha = .25;
+            this.tempWall.wall.draw();
+            c.globalAlpha = 1;
+        }
+    }
     makeWalls (walls)
     {
         if (keys.get("q")){
@@ -62,11 +71,6 @@ class Player {
                     this.tempWall.wall = new Wall();
                 }
             }
-
-            c.globalAlpha = .25;
-            this.tempWall.wall.draw();
-            c.globalAlpha = 1;
-            
         }    
         
     }
@@ -188,7 +192,7 @@ class Wall{
 let lastTree = 0;
 let lastFlower = 0;
 let lastForest = 0;
-let nextTree = generateNormallyDistributedRandom(10,19);
+let nextTree = generateNormallyDistributedRandom(20,25);
 let nextFlower = generateNormallyDistributedRandom(7,15);
 let nextForest = generateNormallyDistributedRandom(20,30);
 class Tile{
@@ -209,7 +213,9 @@ class Tile{
     {
         c.fillStyle = 'green';
         c.fillRect(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2,101,101);
-        onScreenElements.push(...this.objects);
+        this.objects.forEach(a=> {if (a!=null) onScreenElements.push(a)});
+
+        this.objects.forEach(a=> {if (a!=null) a.pickup(this)});
     }
 
     makeID()
@@ -232,10 +238,12 @@ class Tile{
                 randX -=50;
             }
             tempX +=randX;
+
             let temp = new Tree(tempX, tempY);
-            this.objects.push(temp);
+            if (!isIntersecting(lifeTree.position.x , lifeTree.position.x+lifeTree.width , lifeTree.position.y , lifeTree.height+lifeTree.position.y , temp.position.x , temp.position.x+temp.width,temp.position.y , temp.position.y+temp.height, 10))
+                this.objects.push(temp);
             lastTree = 0;
-            nextTree = generateNormallyDistributedRandom(10,25);
+            nextTree = generateNormallyDistributedRandom(20,25);
         }
         else if (nextFlower <= lastFlower)
         {
@@ -249,10 +257,12 @@ class Tile{
                 randX += Math.random()*100;
                 randX -=50;a
             }
+            let randY = Math.random()*75;
+            tempY += randY;
             tempX +=randX;
             let temp = new Flower(tempX, tempY);
-
-            this.objects.push(temp);
+            if (!isIntersecting(lifeTree.position.x , lifeTree.position.x+lifeTree.width , lifeTree.position.y , lifeTree.height+lifeTree.position.y , temp.position.x , temp.position.x+temp.width,temp.position.y , temp.position.y+temp.height, 10))
+                this.objects.push(temp);
             lastFlower = 0;
             nextFlower = generateNormallyDistributedRandom(7,15);
         }
@@ -298,25 +308,29 @@ class LifeTree {
     {
        
     }
+    pickup(){}
 }
 class Tree{
     constructor(x,y)
     {
         
+            
         this.position ={
             x:x,
             y:y,
         };
         this.width = 50;
         this.height = 75;
-        this.health = 50; 
+        this.health = 5;
+        this.image = document.getElementById("tree");
+        this.timer=0;
+        this.pickupTime=100;
     }
     draw()
     {
-        let image = document.getElementById("tree");
         if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
         {        
-            c.drawImage(image, this.position.x - center.x +canvas.width/2 -25,this.position.y - center.y +canvas.height/2 - 70);
+            c.drawImage(this.image, this.position.x - center.x +canvas.width/2 -25,this.position.y - center.y +canvas.height/2 - 70);
         }
         else
             drawElementsAfter.push(this);
@@ -350,7 +364,32 @@ class Tree{
             }
         }
     }
-    
+    pickup(tile){
+        if(keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 10))
+        {
+            if (this.timer==0)
+            {
+                keys.set("w",false);
+                keys.set("a",false);
+                keys.set("s",false);
+                keys.set("d",false);
+            }
+            if (keys.get("w")||keys.get('a')||keys.get("s")||keys.get('d'))
+                keys.set("e",false)
+            if (this.timer>=this.pickupTime)
+            {
+                this.health--;
+                this.timer=0;
+                materials.wood += Math.floor(Math.random()*4+1);
+                if (this.health<=0)
+                    tile.objects.splice(tile.objects.indexOf(this),1)
+                console.log(materials.wood);
+            }
+            this.timer++;
+        }
+        else
+            this.timer = 0;
+    }
 }
 class Flower{
     constructor(x,y)
@@ -360,22 +399,33 @@ class Flower{
             x:x,
             y:y,
         }
-        this.size = 25;
+        this.width= 40;
+        this.height=40;
         this.pickupFrames = 150;
         this.isTouchingPlayer = false;
         this.timer=0;
-        this.pickupTime=100; 
+        this.pickupTime=100;
+        switch(Math.floor(Math.random()*3))
+        {
+            case 0:
+                this.image = document.getElementById("blue_flower");
+                break;
+            case 1:
+                this.image = document.getElementById("yellow_flower");
+                break;
+            default:
+                this.image = document.getElementById("pink_flower");
+                break;
+        }
     }
     collisionX(){}
     collisionY(){}
     draw()
     {
-        let image = document.getElementById("blue_flower");
         if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
         {        
             c.fillStyle = "red";
-            c.fillRect(this.position.x,this.position.y,10,10);
-            c.drawImage(image, this.position.x - center.x +canvas.width/2 ,this.position.y - center.y +canvas.height/2);
+            c.drawImage(this.image, this.position.x - center.x +canvas.width/2 ,this.position.y - center.y +canvas.height/2);
         }
         else
             drawElementsAfter.push(this);
@@ -390,15 +440,29 @@ class Flower{
         // p.height + p.pos.y get bot y
         // p.width + p.pos.x get right x
         //same thing for object but its p.size
-        if(keys.get("e") && isIntersecting(p.width+p.position.x , p.position.x , p.position.y , p.height+p.position.y , this.position.x+this.size , this.position.x,this.position.y , this.position.y+this.size, 10))
+        if(keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 0))
         {
-            this.timer++;
+            if (this.timer==0)
+            {
+                keys.set("w",false);
+                keys.set("a",false);
+                keys.set("s",false);
+                keys.set("d",false);
+            }
+            if (keys.get("w")||keys.get('a')||keys.get("s")||keys.get('d'))
+                keys.set("e",false)
             if (this.timer>=this.pickupTime)
             {
-                    tiles.object.pop(this);
+                    tile.objects.splice(tile.objects.indexOf(this),1)
                     this.timer=0;
+                    keys.set("e",false);
+                    materials.mana+=10;
             }
+            this.timer++;
+
         }
+        else
+            this.timer=0;
     }
 }
 class Weed{
@@ -607,11 +671,16 @@ class Vine{
     }
 }
 
+const wallCost = 2;
+
 function addWall(wall){
+    if (materials.wood<wallCost)
+        return false;
     let intersect = false;
     onScreenElements.forEach( a => {
         if (isIntersecting(a.position.x, a.position.x+a.width,a.position.y, a.position.y+a.height,wall.position.x1 - wall.thickness/2, wall.position.x2+wall.thickness/2,wall.position.y1 - wall.thickness/2, wall.position.y2 +wall.thickness/2,-6))
-        {    
+        {   
+            console.log(a,wall.position.x1);
             intersect = true;
         }
     })
@@ -628,7 +697,7 @@ function addWall(wall){
 
     }
     
-
+    materials.wood-=wallCost;
     walls.push(wall);
     wallsX.push(wall);
     wallsY.push(wall);
@@ -636,6 +705,14 @@ function addWall(wall){
     wallsY.sort(compareY);
     walls.sort(compareID);
     return true;
+}
+function drawText()
+{
+    c.fillStyle = "black";
+    c.font= "25px Impact";
+    c.fillText(": "+materials.wood,50,50);
+    c.fillText(": "+materials.mana,50,100);
+
 }
 function compareID (a,b)
 {
@@ -655,7 +732,8 @@ function up (event)
 }
 function down (event)
 {
-    keys.set(event.key.toLowerCase(),true);
+    if(!event.repeat)
+        keys.set(event.key.toLowerCase(),true);
 }
 function mouseup(event)
 {
@@ -734,7 +812,11 @@ function animate()
     
     const start = performance.now();
     c.clearRect(0,0,canvas.width,canvas.height)
+    
     renderTiles();
+    
+    p.actions();
+    weeds.forEach(a => a.makeVines());
 
     onScreenElements.forEach(a=> {if(a!=null)
                                     a.draw()});
@@ -744,17 +826,21 @@ function animate()
     walls.forEach( a => a.draw());
     weeds.forEach( a => a.draw());
 
-    p.actions();
-    weeds.forEach(a => a.makeVines());
+
 
     
     drawElementsAfter.forEach(a=> a.draw());
+    p.drawWall();
+
+    drawText();
+
     drawElementsAfter.length=0;
     onScreenElements.length=0;
     tilesTouching.length=0;
 
 
     const end = performance.now();
+    //console.log(end-start);
 }
 function gameSetUp()
 {
@@ -773,7 +859,7 @@ function resizeCanvas() {
 
 
 let center = {x : 0,y : 0,}
-let materials = {wood : 0}
+let materials = {wood : 0, mana: 0}
 let mouse = {x : 0,y : 0,}
 const keys = new Map();
 keys.set('a',false);
@@ -809,9 +895,9 @@ const weeds = [];
 let onScreenElements = [];
 let tilesTouching = [];
 let drawElementsAfter = [];
-weeds.push(new Weed(10550,10550));
-weeds[0].makePath();
-weeds[0].makeVines();
+//weeds.push(new Weed(10550,10550));
+//weeds[0].makePath();
+//weeds[0].makeVines();
 gameSetUp();
 
 
