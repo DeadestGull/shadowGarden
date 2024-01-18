@@ -105,7 +105,29 @@ class Player {
         center.y = this.position.y + this.height/2;
     }
 }
+class Mana{
+    constructor (x,y, size, vx, vy)
+    {
+        this.position = {
+            x:x,
+            y:y,
+        }
+        this.velocity = {
+            x:vx,
+            y:vy,
+        }
+        this.size = size;
+    }
+    move()
+    {
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+    }
+    isTouching()
+    {
 
+    }
+}
 class Wall{
     constructor(px,py, px2, py2, see, touch) {
         let x = px;
@@ -119,7 +141,7 @@ class Wall{
             y2:py2,
         }
         this.thickness = 10;
-        this.health=50;
+        this.health=150;
         
     }
     makeID()
@@ -280,13 +302,14 @@ class LifeTree {
         };
         this.width = 200;
         this.height = 200; 
+        this.health = 1000;
     }
     draw()
     {     
         if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
         {        
-            c.fillStyle = 'rgb(52,141,44)';
-            c.fillRect(this.position.x  - center.x +canvas.width/2 , this.position.y - center.y +canvas.height/2, this.width, this.height);
+            c.strokeStyle = 'rgb(52,141,44)';
+            c.strokeRect(this.position.x  - center.x +canvas.width/2 , this.position.y - center.y +canvas.height/2, this.width, this.height);
         }
         else
             drawElementsAfter.push(this);
@@ -383,7 +406,6 @@ class Tree{
                 materials.wood += Math.floor(Math.random()*4+1);
                 if (this.health<=0)
                     tile.objects.splice(tile.objects.indexOf(this),1)
-                console.log(materials.wood);
             }
             this.timer++;
         }
@@ -432,15 +454,7 @@ class Flower{
     }
     pickup(tile)
     {
-        //when e pressed for a certain amount of time and an object is touching the player it will remove the object from that the specific tile
-        // this.position.x/y gives position of object
-        //tiles.object.pop(this) removes current object
-        // isIntersecting( player right x, left x, top y, bottom y, object right x, object left x, object top y, object bottom y, 10);
-        // player is called p.position.x gets left and p.pos.y gets top y
-        // p.height + p.pos.y get bot y
-        // p.width + p.pos.x get right x
-        //same thing for object but its p.size
-        if(keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 0))
+        if(keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 2))
         {
             if (this.timer==0)
             {
@@ -469,223 +483,168 @@ class Weed{
     constructor(x,y) {
         this.nutrients = 0;
         this.path, this.dir = undefined; 
-        this.x = x;
-        this.y = y;
+        this.position ={
+            x:x,
+            y:y,
+        }
         this.vines = [];
+        this.width = 20;
     }
     makePath(){
-        let dir = "";
         let vines = [];
-        let tempX = this.x;
-        let tempY = this.y;
+        let tree = lifeTree.objects[0];
 
-        const lifeTreeWidth = 200;
-        const lifeTreeHeight = 200;
-        if (Math.abs(lifeTree.position.x - this.x) > Math.abs(lifeTree.position.y - this.y))
+        if (Math.abs(this.position.y - tree.position.y)>=Math.abs(this.position.x - tree.position.x))
         {
-            if (lifeTree.position.x > this.x)
-            {
-                dir = "right";
-                tempX+=50;
-                vines.push({x:tempX, y:tempY,});
-                while (tempX>lifeTree.position.x+lifeTreeWidth/2)
-                {
-                    tempX+=100;
-                    vines.push({x:tempX, y:tempY,});
-                }
-            }
+            if (this.position.y > tree.position.y)
+                vines.push(new Vine(this.position.x-this.width/2,this.position.x+this.width/2,this.position.y,tree.position.y+tree.height/2+this.width/2,"up"));
             else
-            {
-                dir = "left";
-                tempX-=50;
-                vines.push({x:tempX, y:tempY,});
-                while (tempX<lifeTree.position.x+lifeTreeWidth/2)
-                {
-                    tempX-=100;
-                    vines.push({x:tempX, y:tempY,});
-                }
-            }
-            if (lifeTree.position.y + lifeTreeHeight> tempY)
-                while (lifeTree.position.y > tempY)
-                {
-                    tempY+=100;
-                    vines.push({x:tempX, y:tempY,});
-                }
+                vines.push(new Vine(this.position.x-this.width/2,this.position.x+this.width/2,this.position.y,tree.position.y+tree.height/2+this.width/2+20,"down"));
+            if (this.position.x> tree.position.x)
+                vines.push(new Vine(this.position.x,tree.position.x+tree.width,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"left"));
             else
-                while (lifeTree.position.y + lifeTreeHeight< tempY)
-                {   
-                    tempY-=100;
-                    vines.push({x:tempX, y:tempY,});
-                }
-        }
-        else
+                vines.push(new Vine(this.position.x,tree.position.x,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"right"));
+
+        } 
+        else 
         {
-            if (lifeTree.position.y + lifeTreeHeight> this.y)
+            if (this.position.x > tree.position.x)
             {
-                dir = "down"
-                tempY+=50;
-                vines.push({x:tempX, y:tempY,});
-                while (lifeTree.position.y + lifeTreeHeight> tempY)
-                {
-                    tempY+=100;
-                    vines.push({x:tempX, y:tempY,});
-                }
+
             }
             else
             {
-                dir = "up"
-                tempY-=50;
-                vines.push({x:tempX, y:tempY,});
-                while (lifeTree.position.y + lifeTreeHeight< tempY)
-                {   
-                    tempY-=100;
-                    vines.push({x:tempX, y:tempY,});
-                }
+
             }
-            if (lifeTree.position.x+lifeTreeWidth/2 > tempX)
-                while (tempX<lifeTree.position.x)
-                {
-                    tempX+=100;
-                    vines.push({x:tempX, y:tempY,});
-                }
-            else
-                while (tempX>lifeTree.position.x+lifeTreeWidth/2)
-                {
-                    tempX-=100;
-                    vines.push({x:tempX, y:tempY,});
-                }     
-        }
-        this.path=vines;
-        this.dir=dir;
+        }        
+
+        this.vines = vines;
     }
     makeVines(){
-        let xdif1=0;
-        let xdif2=0;
-        let ydif1=0;
-
-        let ydif2=0;
-        console.log(this.vines);
-        if (this.vines!=[])
+        let i = 0
+        for (i=0; i<this.vines.length; i++)
         {
-        console.log(this.vines);
-
-        switch (this.vines[0].dir)
-        {
-            case 'left':
-                xdif2=-this.vines[0].nutrients
-                ydif1=-10;
-                ydif2=10;
-                break;
-            case 'right':
-                xdif2=this.vines[0].nutrients
-                ydif1=-10;
-                ydif2=10;
-                break;
-            case 'up':
-                ydif2=-this.vines[0].nutrients
-                xdif1=-10;
-                xdif2=10;
-                break;
-            case 'down':
-                ydif2=this.vines[0].nutrients
-                xdif1=-10;
-                xdif2=10;
-                break;
-        }
-        if (this.vines[0].x+xdif1, this.vines[0].x+xdif2,this.vines[0].y+ydif1,this.vines[0]+ydif2,lifeTree.position.x,lifeTree.position.x+lifeTree.width,lifeTree.position.y,lifeTree.position.y+lifeTree.height,-2)
-            lifeTree.health--;
-        }
-        else if (this.path == []&& this.nutrients == 100)
-            this.nutrients--;
-        else if (this.nutrients>50 && this.path != [])
-        {
-            if (this.vines.length == 0){
-                let dir = "";
-                let vine = this.path.shift();
-                if (vine.x > this.path[0].x)
-                    dir = "left";
-                if (vine.x < this.path[0].x)
-                    dir = "right";
-                if (vine.y > this.path[0].y)
-                    dir = "up";
-                if (vine.y < this.path[0].y)
-                    dir = "down";
-                this.vines.push(new Vine(vine.x,vine.y,dir));
-            }
-            else if (this.vines[this.vines.length-1].nutrients==100)
+            if (!this.vines[i].isFull())
             {
-                let dir = ""
-                let vine = this.path.shift();
-                if (vine.x > this.path[0].x)
-                    dir = "left";
-                if (vine.x < this.path[0].x)
-                    dir = "right";
-                if (vine.y > this.path[0].y)
-                    dir = "up";
-                if (vine.y < this.path[0].y)
-                    dir = "down";
-                this.vines.push(new Vine(vine.x,vine.y,dir));
+                this.vines[i].update();
+                let intersect =false;
+                walls.forEach(a => {    
+                    if(isIntersecting(this.vines[i].position.x1,this.vines[i].position.x2,this.vines[i].position.y1, this.vines[i].position.y2, a.position.x1-a.thickness/2, a.position.x2+a.thickness/2, a.position.y1-a.thickness/2, a.position.y2+a.thickness/2,0))
+                    {
+                        a.health--;
+                        if (a.health<=0)
+                        {
+                            walls.splice(walls.indexOf(a),1);
+                            wallsX.splice(wallsX.indexOf(a),1);
+                            wallsY.splice(wallsY.indexOf(a),1);
+
+                        }
+                        intersect=true;
+                    }
+                 });
+                 if (intersect)
+                 this.vines[i].nutrients--;
+                break;
             }
-            else 
-                this.vines[this.vines.length-1].nutrients +=1;
         }
-        else if (this.path != [])
-            this.nutrients += 1;
+        if (i == this.vines.length)
+            life.health--;
     }
     draw(){
-        
-        c.fillStyle = 'yellow';
-        if (this.dir == "up")
-            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2 - this.nutrients, 20 , 20+ this.nutrients);
-        if (this.dir == "down")
-            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2, 20 , 20+ this.nutrients);
-        if (this.dir == "left")
-            c.fillRect(this.x-10 - center.x + canvas.width/2 - this.nutrients, this.y-10 - center.y + canvas.height/2 , 20 + this.nutrients, 20);
-        if (this.dir == "right")
-            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2, 20 + this.nutrients, 20);
-        this.vines.forEach(a => a.draw());
+        this.vines.forEach(a => {if(a.nutrients!=20) a.draw()});
     }
 }
 class Vine{
-    constructor(x,y,dir){
-        this.x = x;
-        this.y = y;
+    constructor(x1,x2,y1,y2,dir)
+    {
+        if (dir=="up"||dir == "down")
+        {
+            this.position = {
+                x1:x1,
+                x2:x2,
+                y1:y1,
+                y2:y1,
+            }
+            this.target = y2;
+        }
+        else
+        {
+            this.position = {
+                x1:x1,
+                x2:x1,
+                y1:y1,
+                y2:y2,
+            }
+            this.target = x2;
+        }
         this.dir = dir;
-        this.nutrients = 0;
+        this.nutrients = 20;
+        this.width = 20; 
+    }
+    update()
+    {
+        this.nutrients++;
+        if (this.dir == "up")
+            this.position.y2 = this.position.y1 - this.nutrients;
+        if (this.dir == "down")
+            this.position.y2 = this.position.y1 + this.nutrients;
+        if (this.dir == "left")
+            this.position.x2 = this.position.x1 - this.nutrients;
+        if (this.dir == "right")
+            this.position.x2 = this.position.x1 + this.nutrients;
+    
+        }
+    isFull()
+    {
+        if (this.dir == "up"||this.dir == "down")
+            return (this.nutrients>=Math.abs(this.position.y1-this.target));
+        return (this.nutrients>=Math.abs(this.position.x1-this.target));
     }
     draw()
     {
-        c.fillStyle = 'yellow';
-        if (this.dir == "up")
-            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2 - this.nutrients, 20 , 20+ this.nutrients);
-        if (this.dir == "down")
-            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2, 20 , 20+ this.nutrients);
-        if (this.dir == "left")
-            c.fillRect(this.x-10 - center.x + canvas.width/2 - this.nutrients, this.y-10 - center.y + canvas.height/2 , 20 + this.nutrients, 20);
-        if (this.dir == "right")
-            c.fillRect(this.x-10 - center.x + canvas.width/2, this.y-10 - center.y + canvas.height/2, 20 + this.nutrients, 20);
-    }
-    touchingPlayer()
-    {
-        
+        c.fillStyle = "yellow";
+        switch(this.dir)
+        {
+            case "up":
+                c.fillRect(this.position.x1- center.x +canvas.width/2, this.position.y2- center.y +canvas.height/2, this.width, this.nutrients);
+                break;
+            case "down":
+                c.fillRect(this.position.x1- center.x +canvas.width/2, this.position.y1- center.y +canvas.height/2, this.width, this.nutrients);
+                break;
+            case "left":
+                c.fillRect(this.position.x2- center.x +canvas.width/2 , this.position.y1- center.y +canvas.height/2, this.nutrients, this.width);
+                break;    
+            case "right":
+                c.fillRect(this.position.x1- center.x +canvas.width/2 , this.position.y1- center.y +canvas.height/2, this.nutrients, this.width); 
+                break;
+        }
     }
 }
-
-const wallCost = 2;
+const wallCost = 0;
 
 function addWall(wall){
     if (materials.wood<wallCost)
         return false;
-    let intersect = false;
+    let intersect = false
+    weeds.forEach( a => {
+        a.vines.forEach(b => {
+            if (b.nutrients>20){
+                if(isIntersecting(b.position.x1,b.position.x2,b.position.y1, b.position.y2, wall.position.x1 - wall.thickness/2, wall.position.x2+wall.thickness/2,wall.position.y1 - wall.thickness/2, wall.position.y2 +wall.thickness/2,0))
+                    intersect = true;
+            }
+        })
+    })
+    if (intersect)
+        return false
     onScreenElements.forEach( a => {
         if (isIntersecting(a.position.x, a.position.x+a.width,a.position.y, a.position.y+a.height,wall.position.x1 - wall.thickness/2, wall.position.x2+wall.thickness/2,wall.position.y1 - wall.thickness/2, wall.position.y2 +wall.thickness/2,-6))
         {   
-            console.log(a,wall.position.x1);
             intersect = true;
+
         }
     })
-    if (intersect== true)
-        return false;
+    if (intersect)
+    return false
     let start = 0, end = walls.length-1;
     while (start <= end){
         let mid =Math.floor((start+end)/2);
@@ -705,6 +664,13 @@ function addWall(wall){
     wallsY.sort(compareY);
     walls.sort(compareID);
     return true;
+}
+function shootMana()
+{
+    if (materials.mana>5)
+    {
+
+    }
 }
 function drawText()
 {
@@ -729,11 +695,15 @@ function compareY (a,b)
 function up (event)
 {
     keys.set(event.key.toLowerCase(),false);
+    if (event.key.toLowerCase() == 'f')
+        shootMana();
 }
 function down (event)
 {
     if(!event.repeat)
         keys.set(event.key.toLowerCase(),true);
+    if (event.key.toLowerCase() == 'f')
+        chargeMana++;
 }
 function mouseup(event)
 {
@@ -774,6 +744,14 @@ function generateNormallyDistributedRandom(x,y)
 
 function isIntersecting (ax1,ax2,ay1,ay2,bx1,bx2,by1,by2,margin)
 {
+    if (ax1 > ax2)
+        [ax1, ax2] = [ax2,ax1]
+    if (ay1 > ay2)
+        [ay1, ay2] = [ay2, ay1]
+    if (bx1 > bx2)
+        [bx1, bx2] = [bx2, bx1]
+    if (by1 > by2)
+        [by1, by2] = [by2, by1]
     return !(ax2 < bx1 - margin || ax1 > bx2 + margin || ay1 > by2 + margin || ay2 < by1 - margin) 
 }
 function renderTiles()
@@ -838,6 +816,12 @@ function animate()
     onScreenElements.length=0;
     tilesTouching.length=0;
 
+    if (life.health<=0)
+    {
+        c.fillStyle = 'red';
+        c.fillRect(0,0,canvas.width, canvas.height);
+        clearInterval(myInterval);
+    }
 
     const end = performance.now();
     //console.log(end-start);
@@ -850,7 +834,7 @@ function gameSetUp()
     addEventListener("keyup",up);
     addEventListener("keydown",down);
     window.onload = window.onresize = resizeCanvas;
-    setInterval(animate,16);
+    myInterval= setInterval(animate,16);
 }
 function resizeCanvas() {
     canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -872,6 +856,7 @@ keys.set('mouse',false);
 const tiles = new Map();
 const ltree = [new LifeTree(10100,10100)];
 const lifeTree = new Tile(10100,10100,ltree);
+const life = ltree[0];
 const t = []
 
 for (let x =10000; x<10400; x+=100)
@@ -885,7 +870,7 @@ var canvas = document.querySelector('canvas');
 var c =canvas.getContext("2d");
 
 resizeCanvas();
-
+let chargeMana = 0;
 const p = new Player(10000,10000);
 const walls = [];
 const wallsX = [];
@@ -895,9 +880,10 @@ const weeds = [];
 let onScreenElements = [];
 let tilesTouching = [];
 let drawElementsAfter = [];
-//weeds.push(new Weed(10550,10550));
-//weeds[0].makePath();
-//weeds[0].makeVines();
+let myInterval = null;
+weeds.push(new Weed(9550,9000));
+weeds[0].makePath();
+weeds[0].makeVines();
 gameSetUp();
 
 
