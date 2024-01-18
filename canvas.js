@@ -74,31 +74,22 @@ class Player {
         }    
         
     }
-    move(walls)
+    move()
     {
-        //face directions
-        if (Math.abs(mouse.x-canvas.width/2)/canvas.width > Math.abs(mouse.y-canvas.height/2)/ canvas.height)
-            if (mouse.x-canvas.width/2 > 0)
-                this.direction = "right";
-            else 
-                this.direction = "left";
-        else
-            if (mouse.y-canvas.height/2 > 0)
-                this.direction = "down";
-            else
-                this.direction = "up";
         //move
-        if (keys.get("d") && keys.get("a")==false)//move right
-            this.position.x+=this.speed;
-        if (keys.get("a") && keys.get("d")==false)//move left
-            this.position.x-=this.speed;
+        if (movementKeys[0]=="d")//move right
+            {this.position.x+=this.speed; this.direction = "right";}
+        if (movementKeys[0]=="a")//move left
+            {this.position.x-=this.speed; this.direction = "left";}
         wallsX.forEach( a => a.collisionX(this));
         onScreenElements.forEach( a => {if(a!=null)a.collisionX(this)});
-        if (keys.get("w") && keys.get("s")==false)//move up
-            this.position.y-=this.speed;
-        if (keys.get("s") && keys.get("w")==false)//move down
-            this.position.y+=this.speed;
+        if (movementKeys[0]=="w")//move up
+            {this.position.y-=this.speed; this.direction= "up";}
+        if (movementKeys[0]=="s")//move down
+            {this.position.y+=this.speed;this.direction = 'down';}
         wallsY.forEach( a => a.collisionY(this)); 
+
+
         onScreenElements.forEach( a => {if(a!=null)a.collisionY(this)});
 
         center.x = this.position.x + this.width/2;
@@ -106,22 +97,51 @@ class Player {
     }
 }
 class Mana{
-    constructor (x,y, size, vx, vy)
+    constructor (x, y, vx, vy)
     {
         this.position = {
             x:x,
-            y:y,
+            y:y
         }
         this.velocity = {
             x:vx,
-            y:vy,
+            y:vy
         }
-        this.size = size;
+        this.size = 25;
+        this.timer = 0;
+
     }
     move()
     {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
+
+        if (this.velocity.x < 0)
+            this.velocity.x +=.01
+        if (this.velocity.x > 0)
+            this.velocity.x -=.01
+        if (this.velocity.y < 0)
+            this.velocity.y +=.01
+        if (this.velocity.y > 0)
+            this.velocity.y -=.01
+        if (this.velocity.x == 0 && this.velocity.y == 0)
+        {
+            this.timer++;
+            if (this.timer >=250)
+                mana.splice(mana.indexOf(this),1);
+        }
+        if (Math.abs(this.velocity.x) < .02)
+            this.velocity.x = 0;
+        if (Math.abs(this.velocity.y) < .02)
+            this.velocity.y = 0;
+        
+    }
+    draw()
+    {
+        c.fillStyle = "blue";
+        c.beginPath();
+        c.arc(this.position.x- center.x +canvas.width/2, this.position.y- center.y +canvas.height/2, this.size/2, 0, Math.PI*2);
+        c.fill();
     }
     isTouching()
     {
@@ -458,6 +478,7 @@ class Flower{
         {
             if (this.timer==0)
             {
+                movementKeys.length = 0;
                 keys.set("w",false);
                 keys.set("a",false);
                 keys.set("s",false);
@@ -667,15 +688,40 @@ function addWall(wall){
 }
 function shootMana()
 {
-    if (materials.mana>5)
+    if (materials.mana>=5)
     {
+        manaDelay = 0;
+        materials.mana -= 5;
+        let vx = 0;
+        let vy = 0;
+        if (p.direction == "up")
+            vy = -2;
+        if (p.direction == "down")
+            vy = 2;
+        if (p.direction == "left")
+            vx = -2;
+        if (p.direction == "right")
+            vx = 2;
+        if (vy==0)
+            vy=Math.random()*1.5-.75
+        else
+            vy+=(Math.random()/4-.125)    
+        if (vx==0)
+            vx=Math.random()*1.5-.75
+        else
+            vx+=(Math.random()/4-.125)    
 
+        
+        console.log(p.position.x, p.position.y,vx,vy);
+        mana.push(new Mana(p.position.x, p.position.y,vx,vy));
     }
 }
 function drawText()
 {
     c.fillStyle = "black";
     c.font= "25px Impact";
+    c.textAlign = "left";
+
     c.fillText(": "+materials.wood,50,50);
     c.fillText(": "+materials.mana,50,100);
 
@@ -694,16 +740,27 @@ function compareY (a,b)
 }
 function up (event)
 {
+    while (movementKeys.indexOf(event.key.toLowerCase())>-1)
+    {
+        movementKeys.splice(movementKeys.indexOf(event.key.toLowerCase()),1)
+    }
     keys.set(event.key.toLowerCase(),false);
-    if (event.key.toLowerCase() == 'f')
-        shootMana();
+    
 }
+let manaDelay = 0;
 function down (event)
 {
     if(!event.repeat)
+    {
+        if (event.key.toLowerCase() == 'a' || event.key.toLowerCase() == 's' || event.key.toLowerCase() == 'd' || event.key.toLowerCase() == 'w')
+        {
+            movementKeys.unshift(event.key.toLowerCase());
+        }
         keys.set(event.key.toLowerCase(),true);
-    if (event.key.toLowerCase() == 'f')
-        chargeMana++;
+
+    }
+    if (event.key.toLowerCase() == 'f' && manaDelay > 7)
+        shootMana();
 }
 function mouseup(event)
 {
@@ -785,6 +842,7 @@ function renderTiles()
         i++;
     }
 }
+let temp = 0;
 function animate()
 {
     
@@ -792,7 +850,7 @@ function animate()
     c.clearRect(0,0,canvas.width,canvas.height)
     
     renderTiles();
-    
+    mana.forEach( a=> a.move())
     p.actions();
     weeds.forEach(a => a.makeVines());
 
@@ -809,12 +867,14 @@ function animate()
     
     drawElementsAfter.forEach(a=> a.draw());
     p.drawWall();
-
+    mana.forEach(a=> a.draw());
     drawText();
-
+    tutorial();
+   
     drawElementsAfter.length=0;
     onScreenElements.length=0;
     tilesTouching.length=0;
+    manaDelay ++;
 
     if (life.health<=0)
     {
@@ -822,7 +882,7 @@ function animate()
         c.fillRect(0,0,canvas.width, canvas.height);
         clearInterval(myInterval);
     }
-
+    addText ()
     const end = performance.now();
     //console.log(end-start);
 }
@@ -835,6 +895,179 @@ function gameSetUp()
     addEventListener("keydown",down);
     window.onload = window.onresize = resizeCanvas;
     myInterval= setInterval(animate,16);
+}
+function tutorial()
+{
+    if (tutorialStage==0)
+    {
+        tutorialStage+=.5;
+        tutorialText("Welcome To Shadow Garden!", 100,false);
+    }
+    if (tutorialStage==1)
+    {
+        tutorialStage+=.5;
+        tutorialText("This Magical Tree Give Life This World", 100,false);
+    }
+    if (tutorialStage==2)
+    {
+        tutorialStage+=.5;
+        tutorialText("But Weeds Are Trying To Drain Its Energy", 100,false);
+    }
+    if (tutorialStage==3)
+    {
+        tutorialStage+=.5;
+        tutorialText("Your Job Is To Ward Of The Weeds", 100 ,false);
+    }
+    if (tutorialStage==4)
+    {
+        tutorialText("Use WASD To Move", 150, true);
+        if (keys.get("a")||keys.get("s")||keys.get("d")||keys.get("w"))
+            tutorialStage+=.5;
+    }
+    if (tutorialStage==5)
+    {
+        tutorialStage+=.5;
+        tutorialText("Lets Learn How To Harvest Wood", 150, false);
+        temp = materials.wood;
+    }
+    if (tutorialStage==6)
+    {
+        tutorialText("Travel To A Tree And Hold E", 50, true);
+        if (materials.wood>temp)
+        {
+            tutorialStage+=.5;
+            keys.set("e",false);
+        }
+    }
+    if (tutorialStage==7)
+    {
+        tutorialStage+=.5;
+        tutorialText("A Tree Can Be Harvest A Few Times Before Breaking", 150, false)
+    }
+    if (tutorialStage==8)
+    {
+        tutorialText("Now Harvest 5 Wood", 50, true)
+        if (materials.wood>=5)
+            tutorialStage+=.5;
+    }
+    if (tutorialStage==9)
+    {
+        tutorialText("To Build A Wall Press Q", 25, true)
+        if (p.mode=="wall")
+            tutorialStage+=.5
+    }
+    if (tutorialStage==10)
+    {
+        tutorialText("Now Move Your Mouse To Position The Walls Then Click To Place", 45, true)
+        if (walls.length>0)
+            tutorialStage+=.5;
+    }
+    if (tutorialStage==11)
+    {
+        tutorialText("Walls Can Be Also Rotated When Placing By Pressing R", 50, true)
+        if (p.tempWall.orientation == 1)
+            tutorialStage+=.5
+    }
+    if (tutorialStage==12)
+    {
+        tutorialText("To Stop Building Walls Press Q Again", 50, true)
+        if (p.mode!="wall")
+            tutorialStage+=.5
+    }
+    if (tutorialStage==13)
+    {
+        tutorialText("Now Lets Harvest Flowers", 50, false)
+        tutorialStage+=.5
+        temp = materials.mana;
+    }
+    if (tutorialStage==14)
+    {
+        tutorialText("Travel to A Flower And Hold E", 50, true)
+        if (materials.mana> temp)
+            tutorialStage+=.5;
+    }
+    if (tutorialStage==15)
+    {
+        tutorialText("Gathering Flowers Gives You Mana That Can Be Used For Many Things", 150, false);
+        tutorialStage+=.5
+    }
+    if (tutorialStage==16)
+    {
+        tutorialText("It Can Be Used For Healing Walls And The Life Tree Along With Warding Off The Weeds", 250 ,false)
+        tutorialStage+=.5
+    }
+    if (tutorialStage==17)
+    {
+        tutorialText("Speaking of Weeds One Just Appeared", 150, false)
+        tutorialStage+=.5
+        materials.mana = 100;
+    }
+    if (tutorialStage==18)
+    {
+        tutorialText("Quickly Deal With It By Going Next To It And Pressing F To Use Mana",50,true)
+        if (weeds.length==0)
+            tutorialStage +=.5
+    }
+    if (tutorialStage==20)
+    {
+        tutorialText("You Have Time Before The Next Wave Of Weeds Shown ->",150,false)
+        tutorialStage+=.5;
+    }
+    if (tutorialStage==20)
+    {
+        tutorialText("If You Ever Forget The Controls Press Esc", 150 ,false)
+        tutorialStage+=.5;
+    }
+    if (tutorialStage==21)
+    {
+        tutorialText("Best Of Luck", 150 ,false)
+        tutorialStage+=.5;
+    }
+    if (tutorialStage==22)
+    {
+        startWeedTimer();
+    }
+}
+function startWeedTimer(){
+
+}
+let text = "";
+let complete = false; 
+function addText ()
+{
+    if (frames < endFrame || !complete)
+    {
+        c.fillStyle = "black";
+        c.font= "bold 36px serif";
+        c.textAlign = "center";
+        c.fillText(text,canvas.width/2,50);
+        frames++;
+        if (frames > endFrame){
+            c.font= "bold 24px serif";
+            c.fillText("Click to Continue",canvas.width/2,85);
+        }
+        if (frames >= endFrame && keys.get("mouse"))
+            complete = true;
+            
+        
+    }
+    if (complete && frames >= endFrame)
+    {
+        complete=false;
+        tutorialStage++;
+        tutorialStage=Math.floor(tutorialStage);
+        console.log(tutorialStage)
+    }
+}
+let frames = 0;
+let endFrame = 0;
+function tutorialText (t,f,c)
+{
+    frames = 0;
+    endFrame = f;
+    text = t
+    complete=c;
+    
 }
 function resizeCanvas() {
     canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -852,6 +1085,7 @@ keys.set('s',false);
 keys.set('w',false);
 keys.set('t',false);
 keys.set('r',false);
+keys.set('q',false);
 keys.set('mouse',false);
 const tiles = new Map();
 const ltree = [new LifeTree(10100,10100)];
@@ -869,6 +1103,8 @@ tiles.set(lifeTree.id, lifeTree);
 var canvas = document.querySelector('canvas');
 var c =canvas.getContext("2d");
 
+let tutorialStage = 0;
+
 resizeCanvas();
 let chargeMana = 0;
 const p = new Player(10000,10000);
@@ -877,13 +1113,15 @@ const wallsX = [];
 const wallsY = [];
 const flowers = [];
 const weeds = [];
+const mana = [];
+const movementKeys = [];
 let onScreenElements = [];
 let tilesTouching = [];
 let drawElementsAfter = [];
 let myInterval = null;
-weeds.push(new Weed(9550,9000));
-weeds[0].makePath();
-weeds[0].makeVines();
+//weeds.push(new Weed(9550,9000));
+//weeds[0].makePath();
+//weeds[0].makeVines();
 gameSetUp();
 
 
