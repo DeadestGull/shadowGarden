@@ -134,7 +134,28 @@ class Mana{
             this.velocity.x = 0;
         if (Math.abs(this.velocity.y) < .02)
             this.velocity.y = 0;
-        
+        let temp = true
+            weeds.forEach( a => a.vines.forEach(b => {
+                    console.log(b.position.x1, b.position.x2, b.position.y1, b.position.y2);
+                    if (temp&&isIntersectingCircle(this.position.x,this.position.y, this.size/2, b.position.x1, b.position.y1, b.position.x2, b.position.y2))
+                    {
+                        temp = false;
+                        a.reverseMeter += 80;
+                        
+                    }
+            }
+            ));
+            let tree = ltree[0];
+            console.log(isIntersectingCircle(this.position.x, this.position.y, this.size/2, tree.position.x, tree.position.y, tree.position.x + tree.width, tree.position.y + tree.height))
+
+            if (temp&&isIntersectingCircle(this.position.x, this.position.y, this.size/2, tree.position.x, tree.position.y, tree.position.x + tree.width, tree.position.y + tree.height))
+            {
+                console.log("a");
+                tree.heal();
+                temp = false;
+            }
+            if (!temp)
+                mana.splice(mana.indexOf(this),1);
     }
     draw()
     {
@@ -142,10 +163,6 @@ class Mana{
         c.beginPath();
         c.arc(this.position.x- center.x +canvas.width/2, this.position.y- center.y +canvas.height/2, this.size/2, 0, Math.PI*2);
         c.fill();
-    }
-    isTouching()
-    {
-
     }
 }
 class Wall{
@@ -249,17 +266,14 @@ class Tile{
         else
             this.objects = [];
         this.assignType();
-
     }
     draw()
     {
         c.fillStyle = 'green';
         c.fillRect(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2,101,101);
         this.objects.forEach(a=> {if (a!=null) onScreenElements.push(a)});
-
         this.objects.forEach(a=> {if (a!=null) a.pickup(this)});
     }
-
     makeID()
     {
         this.id = ""+this.position.x+"a"+this.position.y;
@@ -334,15 +348,12 @@ class LifeTree {
         else
             drawElementsAfter.push(this);
     }
-    
-    /*
-        p.position.x  //player x
-        p.position.y  //player y
-        p.size
-        this.position.x
-        this.position.y
-        this.size 
-    */
+    heal()
+    {
+        this.health+=50;
+        if (this.health > 1000)
+            this.health = 1000;
+    }
     collisionX()
     {
         
@@ -510,6 +521,7 @@ class Weed{
         }
         this.vines = [];
         this.width = 20;
+        this.reverseMeter = 0;
     }
     makePath(){
         let vines = [];
@@ -521,12 +533,7 @@ class Weed{
                 vines.push(new Vine(this.position.x-this.width/2,this.position.x+this.width/2,this.position.y,tree.position.y+tree.height/2+this.width/2,"up"));
             else
                 vines.push(new Vine(this.position.x-this.width/2,this.position.x+this.width/2,this.position.y,tree.position.y+tree.height/2+this.width/2+20,"down"));
-            if (this.position.x> tree.position.x)
-                vines.push(new Vine(this.position.x,tree.position.x+tree.width,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"left"));
-            else
-                vines.push(new Vine(this.position.x,tree.position.x,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"right"));
-
-        } 
+       } 
         else 
         {
             if (this.position.x > tree.position.x)
@@ -547,7 +554,7 @@ class Weed{
         {
             if (!this.vines[i].isFull())
             {
-                this.vines[i].update();
+                this.vines[i].update(1);
                 let intersect =false;
                 walls.forEach(a => {    
                     if(isIntersecting(this.vines[i].position.x1,this.vines[i].position.x2,this.vines[i].position.y1, this.vines[i].position.y2, a.position.x1-a.thickness/2, a.position.x2+a.thickness/2, a.position.y1-a.thickness/2, a.position.y2+a.thickness/2,0))
@@ -563,13 +570,33 @@ class Weed{
                         intersect=true;
                     }
                  });
-                 if (intersect)
-                 this.vines[i].nutrients--;
+                if (intersect)
+                    this.vines[i].nutrients--;
+                let tree = ltree[0]
+                if (this.vines[i].isTarget())
+                    if (this.position.x> tree.position.x)
+                        this.vines.push(new Vine(this.position.x,tree.position.x+tree.width,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"left"));
+                    else
+                        this.vines.push(new Vine(this.position.x,tree.position.x,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"right"));
+                if (this.vines[i].nutrients<0)
+                    this.vines.splice(this.vines.indexOf(this.vines[i]),1);
+                if (this.vines.length==0)
+                    weeds.splice(weeds.indexOf(this),1);
                 break;
             }
+            if (this.vines.length==0)
+                weeds.splice(weeds.indexOf(this),1);
         }
-        if (i == this.vines.length)
+        if (this.vines.length==0)
+            weeds.splice(weeds.indexOf(this),1);
+        if (this.vines.length>0&&this.reverseMeter>0)
+        {
+            this.reverseMeter-=1;
+            this.vines[this.vines.length-1].nutrients-=2;
+        }
+        if (i!=0&&i == this.vines.length)
             life.health--;
+        
     }
     draw(){
         this.vines.forEach(a => {if(a.nutrients!=20) a.draw()});
@@ -600,11 +627,11 @@ class Vine{
         }
         this.dir = dir;
         this.nutrients = 20;
-        this.width = 20; 
+        this.width = 20;
     }
-    update()
+    update(i)
     {
-        this.nutrients++;
+        this.nutrients+=i;
         if (this.dir == "up")
             this.position.y2 = this.position.y1 - this.nutrients;
         if (this.dir == "down")
@@ -615,6 +642,13 @@ class Vine{
             this.position.x2 = this.position.x1 + this.nutrients;
     
         }
+    isTarget()
+    {
+        if (this.dir == "up"|| this.dir == "down")
+            return this.position.y2 == this.target;
+        else
+            return this.position.x2 == this.target;
+    }
     isFull()
     {
         if (this.dir == "up"||this.dir == "down")
@@ -639,6 +673,10 @@ class Vine{
                 c.fillRect(this.position.x1- center.x +canvas.width/2 , this.position.y1- center.y +canvas.height/2, this.nutrients, this.width); 
                 break;
         }
+    }
+    repel()
+    {
+
     }
 }
 const wallCost = 0;
@@ -988,12 +1026,12 @@ function tutorial()
     }
     if (tutorialStage==15)
     {
-        tutorialText("Gathering Flowers Gives You Mana That Can Be Used For Many Things", 150, false);
+        tutorialText("Gathering Flowers Gives You Mana", 150, false);
         tutorialStage+=.5
     }
     if (tutorialStage==16)
     {
-        tutorialText("It Can Be Used For Healing Walls And The Life Tree Along With Warding Off The Weeds", 250 ,false)
+        tutorialText("It Can Be Used For Healing Life Tree Along With Repelling The Weeds", 250 ,false)
         tutorialStage+=.5
     }
     if (tutorialStage==17)
@@ -1076,8 +1114,12 @@ function resizeCanvas() {
 
 function isIntersectingCircle(Cx,Cy,Cr,X1,Y1,X2,Y2)
 {
+    if (X1 > X2)
+        [X1, X2] = [X2,X1]
+    if (Y1 > Y2)
+        [Y1, Y2] = [Y2, Y1]
     var circle={x:Cx,y:Cy,r:Cr};
-    var rect={x:X1,y:Y2,w:Math.abs(X1-X2),h:Math.abs(Y1-Y2)};
+    var rect={x:X1,y:Y1,w:Math.abs(X2-X1),h:Math.abs(Y2-Y1)};
 
     var distX = Math.abs(circle.x - rect.x-rect.w/2);
     var distY = Math.abs(circle.y - rect.y-rect.h/2);
@@ -1094,7 +1136,7 @@ function isIntersectingCircle(Cx,Cy,Cr,X1,Y1,X2,Y2)
 }
 
 let center = {x : 0,y : 0,}
-let materials = {wood : 0, mana: 0}
+let materials = {wood : 0, mana: 1000}
 let mouse = {x : 0,y : 0,}
 const keys = new Map();
 keys.set('a',false);
@@ -1137,9 +1179,9 @@ let onScreenElements = [];
 let tilesTouching = [];
 let drawElementsAfter = [];
 let myInterval = null;
-//weeds.push(new Weed(9550,9000));
-//weeds[0].makePath();
-//weeds[0].makeVines();
+weeds.push(new Weed(9550,9000));
+weeds[0].makePath();
+weeds[0].makeVines();
 gameSetUp();
 
 
