@@ -1074,7 +1074,7 @@ function resizeCanvas() {
     canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 }
 
-function RectCircleColliding(Cx,Cy,Cr,X1,Y1,X2,Y2)
+function isIntersectingCircle(Cx,Cy,Cr,X1,Y1,X2,Y2)
 {
     var circle={x:Cx,y:Cy,r:Cr};
     var rect={x:X1,y:Y2,w:Math.abs(X1-X2),h:Math.abs(Y1-Y2)};
