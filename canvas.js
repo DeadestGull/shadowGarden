@@ -1077,8 +1077,8 @@ function resizeCanvas() {
 function RectCircleColliding(Cx,Cy,Cr,X1,Y1,X2,Y2)
 {
     var circle={x:Cx,y:Cy,r:Cr};
-    var rect={x:X1,y:Y1,w:Math.abs(X1-X2),h:Math.abs(Y1-Y2)};
-    
+    var rect={x:X1,y:Y2,w:Math.abs(X1-X2),h:Math.abs(Y1-Y2)};
+
     var distX = Math.abs(circle.x - rect.x-rect.w/2);
     var distY = Math.abs(circle.y - rect.y-rect.h/2);
 
