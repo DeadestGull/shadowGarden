@@ -1074,6 +1074,24 @@ function resizeCanvas() {
     canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 }
 
+function RectCircleColliding(Cx,Cy,Cr,X1,Y1,X2,Y2)
+{
+    var circle={x:Cx,y:Cy,r:Cr};
+    var rect={x:X1,y:Y1,w:Math.abs(X1-X2),h:Math.abs(Y1-Y2)};
+    
+    var distX = Math.abs(circle.x - rect.x-rect.w/2);
+    var distY = Math.abs(circle.y - rect.y-rect.h/2);
+
+    if (distX > (rect.w/2 + circle.r)) { return false; }
+    if (distY > (rect.h/2 + circle.r)) { return false; }
+
+    if (distX <= (rect.w/2)) { return true; } 
+    if (distY <= (rect.h/2)) { return true; }
+
+    var dx=distX-rect.w/2;
+    var dy=distY-rect.h/2;
+    return (dx*dx+dy*dy<=(circle.r*circle.r));
+}
 
 let center = {x : 0,y : 0,}
 let materials = {wood : 0, mana: 0}
