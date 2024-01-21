@@ -5,7 +5,8 @@ class Player {
             y:py,
         }
         this.width = 25;
-        this.height = 50;
+        this.pheight= 75;
+        this.height = 25;
         this.direction = "left";
         this.mode = "none";
         this.speed = 3;
@@ -14,6 +15,8 @@ class Player {
             wall : new Wall(0,0,0,0,true,true),
         };
         this.imageUp = [document.getElementById("player-up-s1"), document.getElementById("player-up-idle"), document.getElementById("player-up-s2"), document.getElementById("player-up-idle")];
+        this.imageDown = [document.getElementById("player-down-s1"), document.getElementById("player-down-idle"), document.getElementById("player-down-s2"), document.getElementById("player-down-idle")];
+
         this.imageIndex = 1;
         this.lastImage = 0;
     }
@@ -21,10 +24,10 @@ class Player {
         
 
         if (this.direction == "up")
-        {
-            c.drawImage(this.imageUp[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 20);
+            c.drawImage(this.imageUp[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+        else if (this.direction == "down")
+            c.drawImage(this.imageDown[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
 
-        }
         else
         {
             c.fillStyle = 'red';
@@ -90,6 +93,8 @@ class Player {
     move()
     {
         //move
+        let cx = this.position.x
+        let cy = this.position.y
         if (movementKeys[0]=="d")//move right
             {this.position.x+=this.speed; this.direction = "right";this.lastImage++;}
         if (movementKeys[0]=="a")//move left
@@ -114,6 +119,11 @@ class Player {
             this.imageIndex ++;
             if (this.imageIndex == 4)
                 this.imageIndex = 0;
+        }
+        if (cx == this.position.x && cy == this.position.y)
+        {
+            this.imageIndex=1;
+            this.lastImage=0;
         }
     }
 }
@@ -179,7 +189,7 @@ class Mana{
     }
     draw()
     {
-        c.drawImage(this.image, this.position.x - center.x +canvas.width/2,this.position.y - center.y +canvas.height/2-50);
+        c.drawImage(this.image, this.position.x - center.x +canvas.width/2 - this.size/2,this.position.y - center.y +canvas.height/2-this.size/2);
     }
 }
 class Wall{
@@ -544,7 +554,7 @@ class Weed{
             if (this.position.x > tree.position.x)
                 vines.push(new Vine(this.position.x, tree.position.x + tree.width/2, this.position.y - this.width/2, this.position.y + this.width/2, "left"))
             else
-              vines.push(new Vine(this.position.x, tree.position.x + tree.width/2, this.position.y - this.width/2, this.position.y + this.width/2, "right"))
+                vines.push(new Vine(this.position.x, tree.position.x + tree.width/2, this.position.y - this.width/2, this.position.y + this.width/2, "right"))
         }
 
         this.vines = vines;
@@ -553,6 +563,9 @@ class Weed{
         let i = 0
         for (i=0; i<this.vines.length; i++)
         {
+            console.log(this.vines[i].isTarget(),(this.vines[i].dir == "up"|| this.vines[i].dir== "down"),this.vines.length<2);
+
+            
             if (!this.vines[i].isFull())
             {
                 this.vines[i].update(1);
@@ -573,27 +586,22 @@ class Weed{
                  });
                 if (intersect)
                     this.vines[i].nutrients--;
-                let tree = ltree[0]
+                let tree = ltree[0] 
                 if (this.vines[i].isTarget()&&(this.vines[i].dir == "up"|| this.vines[i].dir== "down")&&this.vines.length<2)
                     if (this.position.x> tree.position.x)
                         this.vines.push(new Vine(this.position.x,tree.position.x+tree.width,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"left"));
                     else
                         this.vines.push(new Vine(this.position.x,tree.position.x,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"right"));
-                
-                else if (this.vines[i].isTarget()&&this.vines.length<2)
-                    if (this.position.y > tree.position.x)
-                        this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width, tree.position.x + tree.width/2 +this.width, this.position.y, tree.position.y + tree.height, "up"));
-                    else
-                        this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width, tree.position.x + tree.width/2 +this.width, this.position.y, tree.position.y, "down"));
+            else if (this.vines[i].isTarget()&&this.vines.length<2)
+                if (this.position.y > tree.position.x)
+                    this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width, tree.position.x + tree.width/2 +this.width, this.position.y, tree.position.y + tree.height, "up"));
+                else
+                    this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width, tree.position.x + tree.width/2 +this.width, this.position.y, tree.position.y, "down"));
 
                 if (this.vines[i].nutrients<0)
                     this.vines.splice(this.vines.indexOf(this.vines[i]),1);
-                if (this.vines.length==0)
-                    weeds.splice(weeds.indexOf(this),1);
                 break;
             }
-            if (this.vines.length==0)
-                weeds.splice(weeds.indexOf(this),1);
         }
         if (this.vines.length==0)
             weeds.splice(weeds.indexOf(this),1);
@@ -652,6 +660,7 @@ class Vine{
         }
     isTarget()
     {
+        console.log (this.position.y2,this.position.x2,this.target)
         if (this.dir == "up"|| this.dir == "down")
             return this.position.y2 == this.target;
         else
@@ -699,15 +708,13 @@ function addWall(wall){
     })
     if (intersect)
         return false
-    onScreenElements.forEach( a => {
-        if (isIntersecting(a.position.x, a.position.x+a.width,a.position.y, a.position.y+a.height,wall.position.x1 - wall.thickness/2, wall.position.x2+wall.thickness/2,wall.position.y1 - wall.thickness/2, wall.position.y2 +wall.thickness/2,-6))
-        {   
-            intersect = true;
-
-        }
-    })
+    let a = ltree[0];
+    if (isIntersecting(a.position.x, a.position.x+a.width,a.position.y, a.position.y+a.height,wall.position.x1 - wall.thickness/2, wall.position.x2+wall.thickness/2,wall.position.y1 - wall.thickness/2, wall.position.y2 +wall.thickness/2,-6))
+    {   
+        intersect = true;
+    }
     if (intersect)
-    return false
+        return false
     let start = 0, end = walls.length-1;
     while (start <= end){
         let mid =Math.floor((start+end)/2);
@@ -912,8 +919,9 @@ function animate()
     p.drawWall();
     mana.forEach(a=> a.draw());
     drawText();
-    tutorial();
-
+    
+    
+    
 
     drawElements.length=0;
     onScreenElements.length=0;
@@ -926,9 +934,17 @@ function animate()
         c.fillRect(0,0,canvas.width, canvas.height);
         clearInterval(myInterval);
     }
-    addText ()
+    if (startTimer==false)
+    {
+        tutorial();
+        addText();
+    }
+    else
+    {
+        weedTimer();
+
+    }
     const end = performance.now();
-    timer += .016;
     //console.log(end-start);
 }
 function gameSetUp()
@@ -948,6 +964,7 @@ function compareHeight(a,b)
     else
         return -1;
 }
+let startTimer = false;
 function tutorial()
 {
     if (tutorialStage==0)
@@ -1051,40 +1068,77 @@ function tutorial()
     if (tutorialStage==17)
     {
         tutorialText("Speaking of Weeds One Just Appeared", 150, true)
-        weeds.push(new Weed(11050,9500));
+        weeds.push(new Weed(11050,10000));
         weeds[0].makePath();
-        weeds[0].makeVines();
         tutorialStage+=.5
         materials.mana = 100;
     }
     if (tutorialStage==18)
     {
-        tutorialText("Quickly Deal With It By Going Next To It And Pressing F To Use Mana",50,true)
+        tutorialText("Quickly Deal With It By Going Next To It And Pressing F To Use Mana",50,false)
 
         if (weeds.length==0)
             tutorialStage +=.5
     }
-    if (tutorialStage==20)
+
+    if (tutorialStage==19)
     {
-        tutorialText("You Have Time Before The Next Wave Of Weeds Shown ->",150,false)
+        tutorialText("Good Luck!", 150 ,true)
         tutorialStage+=.5;
     }
     if (tutorialStage==20)
     {
-        tutorialText("If You Ever Forget The Controls Press Esc", 150 ,false)
-        tutorialStage+=.5;
-    }
-    if (tutorialStage==21)
-    {
-        tutorialText("Best Of Luck", 150 ,false)
-        tutorialStage+=.5;
-    }
-    if (tutorialStage==22)
-    {
-        WeedTimer();
+        startTimer = true;
+        tutorialStage++;
     }
 }
-function WeedTimer(){
+
+let inbetween = 5;
+let wave = 1;
+let spawned = false
+function weedTimer(){
+    if (Math.ceil(inbetween-timer) + 1 == 0)
+    {
+        if (spawned == false)
+        for (let i = 0; i < wave/1.5; i++)
+        {
+            let changeX = Math.random()*500 + 400;
+            let changeY = Math.random()*500 + 400;
+
+            changeX = Math.floor(changeX/10) *10;
+            changeY = Math.floor(changeY/10) *10;
+            let tempX = ltree[0].position.x;
+            let tempY = ltree[0].position.y;
+            if (Math.random()>.5)
+                tempX-=changeX;
+            else
+                tempX +=changeX
+            if (Math.random()>.5)
+                tempY-=changeY;
+            else
+                tempY+=changeY
+            weeds.push(new Weed(tempX,tempY));
+            weeds[i].makePath();
+        } 
+        c.font= "bold 36px serif";
+        c.textAlign = "right";
+        c.fillText("Wave: "+wave,canvas.width-50,50);
+        spawned= true;
+        if (spawned&&weeds.length == 0)
+        {
+            spawned = false;
+            timer = 0;
+            wave++;
+        }
+    }
+    else
+    {
+        c.font= "bold 36px serif";
+        c.textAlign = "right";
+        c.fillText("Next Wave In "+Math.ceil(inbetween-timer)+ " Seconds",canvas.width-50,50);    
+        timer += .016;
+    }
+    
 
 }   
 let text = "";
@@ -1180,12 +1234,12 @@ tiles.set(lifeTree.id, lifeTree);
 var canvas = document.querySelector('canvas');
 var c =canvas.getContext("2d");
 
-let tutorialStage = 0;
+let tutorialStage = 20;
 
 resizeCanvas();
 let timer = 0;
 let chargeMana = 0;
-const p = new Player(10000,10000);
+const p = new Player(10000,10200);
 const walls = [];
 const wallsX = [];
 const wallsY = [];
