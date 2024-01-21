@@ -940,12 +940,8 @@ function animate()
         addText();
     }
     else
-    {
         weedTimer();
-
-    }
     const end = performance.now();
-    //console.log(end-start);
 }
 function gameSetUp()
 {
@@ -1093,7 +1089,7 @@ function tutorial()
     }
 }
 
-let inbetween = 5;
+let inbetween = 45;
 let wave = 1;
 let spawned = false
 function weedTimer(){
@@ -1207,7 +1203,7 @@ function isIntersectingCircle(Cx,Cy,Cr,X1,Y1,X2,Y2)
 }
 
 let center = {x : 0,y : 0,}
-let materials = {wood : 0, mana: 1000}
+let materials = {wood : 0, mana: 0}
 let mouse = {x : 0,y : 0,}
 const keys = new Map();
 keys.set('a',false);
@@ -1234,7 +1230,7 @@ tiles.set(lifeTree.id, lifeTree);
 var canvas = document.querySelector('canvas');
 var c =canvas.getContext("2d");
 
-let tutorialStage = 20;
+let tutorialStage = 0;
 
 resizeCanvas();
 let timer = 0;
