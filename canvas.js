@@ -1,3 +1,4 @@
+//hi
 class Player {
     constructor(px, py) {
         this.position = {
