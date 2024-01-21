@@ -4,7 +4,7 @@ class Player {
             x:px,
             y:py,
         }
-        this.width = 30;
+        this.width = 25;
         this.height = 50;
         this.direction = "left";
         this.mode = "none";
@@ -13,10 +13,23 @@ class Player {
             orientation : 0, 
             wall : new Wall(0,0,0,0,true,true),
         };
+        this.imageUp = [document.getElementById("player-up-s1"), document.getElementById("player-up-idle"), document.getElementById("player-up-s2"), document.getElementById("player-up-idle")];
+        this.imageIndex = 1;
+        this.lastImage = 0;
     }
     draw () {
-        c.fillStyle = 'red';
-        c.fillRect( canvas.width/2 - this.width/2, canvas.height/2 - this.height/2, this.width, this.height);
+        
+
+        if (this.direction == "up")
+        {
+            c.drawImage(this.imageUp[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 20);
+
+        }
+        else
+        {
+            c.fillStyle = 'red';
+            c.fillRect( canvas.width/2 - this.width/2, canvas.height/2 - this.height/2, this.width, this.height);
+        }
     }
     actions(walls) {
         this.move (walls);
@@ -78,15 +91,15 @@ class Player {
     {
         //move
         if (movementKeys[0]=="d")//move right
-            {this.position.x+=this.speed; this.direction = "right";}
+            {this.position.x+=this.speed; this.direction = "right";this.lastImage++;}
         if (movementKeys[0]=="a")//move left
-            {this.position.x-=this.speed; this.direction = "left";}
+            {this.position.x-=this.speed; this.direction = "left"; this.lastImage++;}
         wallsX.forEach( a => a.collisionX(this));
         onScreenElements.forEach( a => {if(a!=null)a.collisionX(this)});
         if (movementKeys[0]=="w")//move up
-            {this.position.y-=this.speed; this.direction= "up";}
+            {this.position.y-=this.speed; this.direction= "up";this.lastImage++;}
         if (movementKeys[0]=="s")//move down
-            {this.position.y+=this.speed;this.direction = 'down';}
+            {this.position.y+=this.speed;this.direction = 'down';this.lastImage++;}
         wallsY.forEach( a => a.collisionY(this)); 
 
 
@@ -94,11 +107,21 @@ class Player {
 
         center.x = this.position.x + this.width/2;
         center.y = this.position.y + this.height/2;
+
+        if (this.lastImage > 20)
+        {
+            this.lastImage = 0;
+            this.imageIndex ++;
+            if (this.imageIndex == 4)
+                this.imageIndex = 0;
+        }
     }
 }
 class Mana{
     constructor (x, y, vx, vy)
     {
+        this.image = document.getElementById("mana");
+
         this.position = {
             x:x,
             y:y
@@ -136,7 +159,6 @@ class Mana{
             this.velocity.y = 0;
         let temp = true
             weeds.forEach( a => a.vines.forEach(b => {
-                    console.log(b.position.x1, b.position.x2, b.position.y1, b.position.y2);
                     if (temp&&isIntersectingCircle(this.position.x,this.position.y, this.size/2, b.position.x1, b.position.y1, b.position.x2, b.position.y2))
                     {
                         temp = false;
@@ -146,11 +168,9 @@ class Mana{
             }
             ));
             let tree = ltree[0];
-            console.log(isIntersectingCircle(this.position.x, this.position.y, this.size/2, tree.position.x, tree.position.y, tree.position.x + tree.width, tree.position.y + tree.height))
 
             if (temp&&isIntersectingCircle(this.position.x, this.position.y, this.size/2, tree.position.x, tree.position.y, tree.position.x + tree.width, tree.position.y + tree.height))
             {
-                console.log("a");
                 tree.heal();
                 temp = false;
             }
@@ -159,10 +179,7 @@ class Mana{
     }
     draw()
     {
-        c.fillStyle = "blue";
-        c.beginPath();
-        c.arc(this.position.x- center.x +canvas.width/2, this.position.y- center.y +canvas.height/2, this.size/2, 0, Math.PI*2);
-        c.fill();
+        c.drawImage(this.image, this.position.x - center.x +canvas.width/2,this.position.y - center.y +canvas.height/2-50);
     }
 }
 class Wall{
@@ -176,7 +193,9 @@ class Wall{
             y1:y,
             x2:px2,
             y2:py2,
+            y:y-5
         }
+        this.height = 10;
         this.thickness = 10;
         this.health=150;
         
@@ -251,9 +270,8 @@ class Wall{
 let lastTree = 0;
 let lastFlower = 0;
 let lastForest = 0;
-let nextTree = generateNormallyDistributedRandom(20,25);
-let nextFlower = generateNormallyDistributedRandom(7,15);
-let nextForest = generateNormallyDistributedRandom(20,30);
+let nextTree = generateNormallyDistributedRandom(5,30);
+let nextFlower = generateNormallyDistributedRandom(5,15);
 class Tile{
     constructor(x1,y1,objects)
     {
@@ -265,12 +283,13 @@ class Tile{
             this.objects = objects;
         else
             this.objects = [];
+        this.image = document.getElementById("grass");
+
         this.assignType();
     }
     draw()
     {
-        c.fillStyle = 'green';
-        c.fillRect(this.position.x - center.x +canvas.width/2, this.position.y - center.y +canvas.height/2,101,101);
+        c.drawImage(this.image, this.position.x - center.x +canvas.width/2,this.position.y - center.y +canvas.height/2);
         this.objects.forEach(a=> {if (a!=null) onScreenElements.push(a)});
         this.objects.forEach(a=> {if (a!=null) a.pickup(this)});
     }
@@ -286,7 +305,7 @@ class Tile{
             let tempX = this.position.x;
             let tempY = this.position.y;
             let randX = Math.random()*50;
-            if (tiles.has(this.position.x+100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
+            if (tiles.has(this.position.x+100+""+this.position.y) && tiles.get(this.position.x+100+""+this.position.y).objects == [])
                 randX += Math.random()*100;
             if (tiles.has(this.position.x-100+""+this.position.y) && tiles.get(this.position.x-100+""+this.position.y).objects == [])
             {
@@ -294,12 +313,13 @@ class Tile{
                 randX -=50;
             }
             tempX +=randX;
-
             let temp = new Tree(tempX, tempY);
-            if (!isIntersecting(lifeTree.position.x , lifeTree.position.x+lifeTree.width , lifeTree.position.y , lifeTree.height+lifeTree.position.y , temp.position.x , temp.position.x+temp.width,temp.position.y , temp.position.y+temp.height, 10))
+            if (!isIntersecting(tempX,tempX + temp.width, tempY, tempY + temp.height, ltree[0].position.x, ltree[0].position.x + ltree[0].height, ltree[0].position.y, ltree[0].position.y + ltree[0].height,10))
+            {
                 this.objects.push(temp);
+            }
             lastTree = 0;
-            nextTree = generateNormallyDistributedRandom(20,25);
+            nextTree = generateNormallyDistributedRandom(5,45);
         }
         else if (nextFlower <= lastFlower)
         {
@@ -317,14 +337,14 @@ class Tile{
             tempY += randY;
             tempX +=randX;
             let temp = new Flower(tempX, tempY);
-            if (!isIntersecting(lifeTree.position.x , lifeTree.position.x+lifeTree.width , lifeTree.position.y , lifeTree.height+lifeTree.position.y , temp.position.x , temp.position.x+temp.width,temp.position.y , temp.position.y+temp.height, 10))
+            if (!isIntersecting(tempX,tempX + temp.width, tempY, tempY + temp.height, ltree[0].position.x, ltree[0].position.x + ltree[0].height, ltree[0].position.y, ltree[0].position.y + ltree[0].height,10))
                 this.objects.push(temp);
             lastFlower = 0;
-            nextFlower = generateNormallyDistributedRandom(7,15);
-        }
-         lastTree++;
-         lastFlower++;
-         lastForest++;
+            nextFlower = generateNormallyDistributedRandom(5,15);
+        }        
+        lastTree++;
+        lastFlower++;
+        lastForest++;
     }
 }
 class LifeTree {
@@ -337,16 +357,12 @@ class LifeTree {
         this.width = 200;
         this.height = 200; 
         this.health = 1000;
+        this.image = document.getElementById("lifetree");
+
     }
     draw()
     {     
-        if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
-        {        
-            c.strokeStyle = 'rgb(52,141,44)';
-            c.strokeRect(this.position.x  - center.x +canvas.width/2 , this.position.y - center.y +canvas.height/2, this.width, this.height);
-        }
-        else
-            drawElementsAfter.push(this);
+        c.drawImage(this.image, this.position.x - center.x +canvas.width/2,this.position.y - center.y +canvas.height/2-55);
     }
     heal()
     {
@@ -382,12 +398,7 @@ class Tree{
     }
     draw()
     {
-        if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
-        {        
-            c.drawImage(this.image, this.position.x - center.x +canvas.width/2 -25,this.position.y - center.y +canvas.height/2 - 70);
-        }
-        else
-            drawElementsAfter.push(this);
+        c.drawImage(this.image, this.position.x - center.x +canvas.width/2 -25,this.position.y - center.y +canvas.height/2 - 70);
     }
    
     collisionX()
@@ -474,14 +485,8 @@ class Flower{
     collisionX(){}
     collisionY(){}
     draw()
-    {
-        if (this.position.y+this.size<p.position.y+p.height||drawElementsAfter.indexOf(this)>-1)
-        {        
-            c.fillStyle = "red";
-            c.drawImage(this.image, this.position.x - center.x +canvas.width/2 ,this.position.y - center.y +canvas.height/2);
-        }
-        else
-            drawElementsAfter.push(this);
+    {  
+        c.drawImage(this.image, this.position.x - center.x +canvas.width/2 ,this.position.y - center.y +canvas.height/2);
     }
     pickup(tile)
     {
@@ -537,14 +542,10 @@ class Weed{
         else 
         {
             if (this.position.x > tree.position.x)
-            {
-
-            }
+                vines.push(new Vine(this.position.x, tree.position.x + tree.width/2, this.position.y - this.width/2, this.position.y + this.width/2, "left"))
             else
-            {
-
-            }
-        }        
+              vines.push(new Vine(this.position.x, tree.position.x + tree.width/2, this.position.y - this.width/2, this.position.y + this.width/2, "right"))
+        }
 
         this.vines = vines;
     }
@@ -573,11 +574,18 @@ class Weed{
                 if (intersect)
                     this.vines[i].nutrients--;
                 let tree = ltree[0]
-                if (this.vines[i].isTarget())
+                if (this.vines[i].isTarget()&&(this.vines[i].dir == "up"|| this.vines[i].dir== "down")&&this.vines.length<2)
                     if (this.position.x> tree.position.x)
                         this.vines.push(new Vine(this.position.x,tree.position.x+tree.width,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"left"));
                     else
                         this.vines.push(new Vine(this.position.x,tree.position.x,tree.position.y+tree.height/2+this.width/2,tree.position.y+tree.height/2+this.width/2,"right"));
+                
+                else if (this.vines[i].isTarget()&&this.vines.length<2)
+                    if (this.position.y > tree.position.x)
+                        this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width, tree.position.x + tree.width/2 +this.width, this.position.y, tree.position.y + tree.height, "up"));
+                    else
+                        this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width, tree.position.x + tree.width/2 +this.width, this.position.y, tree.position.y, "down"));
+
                 if (this.vines[i].nutrients<0)
                     this.vines.splice(this.vines.indexOf(this.vines[i]),1);
                 if (this.vines.length==0)
@@ -674,10 +682,6 @@ class Vine{
                 break;
         }
     }
-    repel()
-    {
-
-    }
 }
 const wallCost = 0;
 
@@ -750,7 +754,6 @@ function shootMana()
             vx+=(Math.random()/4-.125)    
 
         
-        console.log(p.position.x, p.position.y,vx,vy);
         mana.push(new Mana(p.position.x, p.position.y,vx,vy));
     }
 }
@@ -892,24 +895,27 @@ function animate()
     p.actions();
     weeds.forEach(a => a.makeVines());
 
-    onScreenElements.forEach(a=> {if(a!=null)
-                                    a.draw()});
 
+    onScreenElements.forEach(a=> {if(a!=null)
+                                    drawElements.push(a)});
+    drawElements.push(p)
+    walls.forEach( a => drawElements.push(a));
+    drawElements.sort(compareHeight);
+    drawElements.forEach(a => a.draw());
     
-    p.draw();
-    walls.forEach( a => a.draw());
+    
     weeds.forEach( a => a.draw());
 
 
 
     
-    drawElementsAfter.forEach(a=> a.draw());
     p.drawWall();
     mana.forEach(a=> a.draw());
     drawText();
     tutorial();
-   
-    drawElementsAfter.length=0;
+
+
+    drawElements.length=0;
     onScreenElements.length=0;
     tilesTouching.length=0;
     manaDelay ++;
@@ -922,6 +928,7 @@ function animate()
     }
     addText ()
     const end = performance.now();
+    timer += .016;
     //console.log(end-start);
 }
 function gameSetUp()
@@ -933,6 +940,13 @@ function gameSetUp()
     addEventListener("keydown",down);
     window.onload = window.onresize = resizeCanvas;
     myInterval= setInterval(animate,16);
+}
+function compareHeight(a,b)
+{  
+    if (a.position.y + a.height > b.position.y + b.height)
+        return 1;
+    else
+        return -1;
 }
 function tutorial()
 {
@@ -1036,13 +1050,17 @@ function tutorial()
     }
     if (tutorialStage==17)
     {
-        tutorialText("Speaking of Weeds One Just Appeared", 150, false)
+        tutorialText("Speaking of Weeds One Just Appeared", 150, true)
+        weeds.push(new Weed(11050,9500));
+        weeds[0].makePath();
+        weeds[0].makeVines();
         tutorialStage+=.5
         materials.mana = 100;
     }
     if (tutorialStage==18)
     {
         tutorialText("Quickly Deal With It By Going Next To It And Pressing F To Use Mana",50,true)
+
         if (weeds.length==0)
             tutorialStage +=.5
     }
@@ -1063,12 +1081,12 @@ function tutorial()
     }
     if (tutorialStage==22)
     {
-        startWeedTimer();
+        WeedTimer();
     }
 }
-function startWeedTimer(){
+function WeedTimer(){
 
-}
+}   
 let text = "";
 let complete = false; 
 function addText ()
@@ -1094,7 +1112,6 @@ function addText ()
         complete=false;
         tutorialStage++;
         tutorialStage=Math.floor(tutorialStage);
-        console.log(tutorialStage)
     }
 }
 let frames = 0;
@@ -1166,6 +1183,7 @@ var c =canvas.getContext("2d");
 let tutorialStage = 0;
 
 resizeCanvas();
+let timer = 0;
 let chargeMana = 0;
 const p = new Player(10000,10000);
 const walls = [];
@@ -1177,11 +1195,6 @@ const mana = [];
 const movementKeys = [];
 let onScreenElements = [];
 let tilesTouching = [];
-let drawElementsAfter = [];
+let drawElements = [];
 let myInterval = null;
-weeds.push(new Weed(9550,9000));
-weeds[0].makePath();
-weeds[0].makeVines();
 gameSetUp();
-
-
