@@ -456,7 +456,10 @@ class Tree{
             {
                 this.health--;
                 this.timer=0;
-                materials.wood += Math.floor(Math.random()*4+1);
+                 for(let i =0; i<Math.floor(Math.random()*4+1);i++)
+                 {
+                    icon.push(WoodIcon(this.position.x,this.position.y, Math.random()*4-2,Math.random()*4-2));
+                 }
                 if (this.health<=0)
                     tile.objects.splice(tile.objects.indexOf(this),1)
             }
@@ -694,7 +697,55 @@ class Vine{
     }
 }
 const wallCost = 0;
+class WoodIcon
+{
+    constructor (x, y, vx, vy)
+    {
+        this.position = {
+            x:x,
+            y:y
+        }
+        this.velocity = {
+            x:vx,
+            y:vy
+        }
+    }
+    move()
+    {
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
 
+        if (this.velocity.x < 0)
+            this.velocity.x +=.015
+        if (this.velocity.x > 0)
+            this.velocity.x -=.015
+        if (this.velocity.y < 0)
+            this.velocity.y +=.015
+        if (this.velocity.y > 0)
+            this.velocity.y -=.015
+        if(Math.abs(this.velocity.x)<.015)
+        {
+            this.velocity.x=0;
+        }
+        if(Math.abs(this.velocity.y)<.015)
+        {
+            this.velocity.y=0;
+        }
+        if (this.velocity.x == 0 && this.velocity.y == 0)
+        {
+            let tx=50;
+            let ty=50;
+        }
+    }
+    draw()
+    {
+        c.beginPath();
+        c.arc(this.position.x,this.position.y,13,0,Math.PI*2);
+        c.fillStyle="red";
+        c.fill();
+    }
+
+}
 function addWall(wall){
     if (materials.wood<wallCost)
         return false;
@@ -1244,6 +1295,7 @@ const flowers = [];
 const weeds = [];
 const mana = [];
 const movementKeys = [];
+const icon = [];
 let onScreenElements = [];
 let tilesTouching = [];
 let drawElements = [];
