@@ -457,7 +457,8 @@ class Tree{
                 this.timer=0;
                  for(let i =0; i<Math.floor(Math.random()*4+1);i++)
                  {
-                     icon.push(new WoodIcon(this.position.x,this.position.y, Math.random()*4-2,Math.random()*4-2));
+                    let deg = Math.random()*Math.PI*2;
+                     icon.push(new WoodIcon(this.position.x+25,this.position.y+20, Math.cos(deg)*1.5,Math.sin(deg)*1.5));
                  }
                 if (this.health<=0)
                     tile.objects.splice(tile.objects.indexOf(this),1)
@@ -765,6 +766,9 @@ class WoodIcon
         {
             let tx=50;
             let ty=50;
+            let yomom=Math.atan2(this.position.y-ty-center.y+canvas.height/2,this.position.x-tx-center.x+canvas.width/2);
+            this.position.x+=Math.cos(yomom);
+            this.position.x+=Math.sin(yomom);
         }
     }
     draw()
@@ -1172,7 +1176,7 @@ function tutorial()
     }
 }
 
-let inbetween = 5;
+let inbetween = 500;
 let wave = 5;
 let spawned = false
 function weedTimer(){
