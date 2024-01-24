@@ -172,7 +172,6 @@ class Mana{
                     if (temp&&isIntersectingCircle(this.position.x,this.position.y, this.size/2, b.position.x1, b.position.y1, b.position.x2, b.position.y2))
                     {
                         temp = false;
-                        a.reverseMeter += 80;
                         a.reverseMeter += 40;
                         
                     }
