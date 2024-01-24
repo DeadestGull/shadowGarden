@@ -5,17 +5,19 @@ class Player {
             y:py,
         }
         this.width = 25;
-        this.pheight= 75;
+        this.pheight= 25;
         this.height = 25;
-        this.direction = "left";
+        this.direction = "up";
         this.mode = "none";
         this.speed = 3;
-        this.tempWall = {
-            orientation : 0, 
-            wall : new Wall(0,0,0,0,true,true),
-        };
+        this.tempWall = new Wall(0,0,0,0,true,true,0),
+        this.inPickUp = false;
         this.imageUp = [document.getElementById("player-up-s1"), document.getElementById("player-up-idle"), document.getElementById("player-up-s2"), document.getElementById("player-up-idle")];
         this.imageDown = [document.getElementById("player-down-s1"), document.getElementById("player-down-idle"), document.getElementById("player-down-s2"), document.getElementById("player-down-idle")];
+        this.imageLeft = [document.getElementById("player-left-s1"), document.getElementById("player-left-idle"), document.getElementById("player-left-s2"), document.getElementById("player-left-idle")];
+        this.imageLeftPickUp = [document.getElementById("player-left-idle"), document.getElementById("player-left-p2"), document.getElementById("player-left-p1"),document.getElementById("player-left-p2")];
+        this.imageRight = [document.getElementById("player-right-s1"), document.getElementById("player-right-idle"), document.getElementById("player-right-s2"), document.getElementById("player-right-idle")]
+        this.imageRightPickUp = [document.getElementById("player-right-idle"), document.getElementById("player-right-p2"), document.getElementById("player-right-p1"),document.getElementById("player-right-p2")];
 
         this.imageIndex = 1;
         this.lastImage = 0;
@@ -24,10 +26,29 @@ class Player {
         
 
         if (this.direction == "up")
-            c.drawImage(this.imageUp[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+            if (this.inPickUp)
+                c.drawImage(this.imageUp[1], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+            else
+                c.drawImage(this.imageUp[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
         else if (this.direction == "down")
-            c.drawImage(this.imageDown[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
-
+            if (this.inPickUp)
+                c.drawImage(this.imageDown[1], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+            else
+                c.drawImage(this.imageDown[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+        else if (this.direction == "left")
+            if (this.inPickUp&&this.imageIndex!=0)
+                c.drawImage(this.imageLeftPickUp[this.imageIndex], canvas.width/2 - this.width/2 -19, canvas.height/2 - this.height/2 - 40);
+            else if (this.inPickUp)
+                c.drawImage(this.imageLeft[1], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+            else
+                c.drawImage(this.imageLeft[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+        else if (this.direction == "right")
+            if (this.inPickUp&&this.imageIndex!=0)
+                c.drawImage(this.imageRightPickUp[this.imageIndex], canvas.width/2 - this.width/2 - 13, canvas.height/2 - this.height/2 - 40);
+            else if (this.inPickUp)
+                c.drawImage(this.imageRight[1], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+            else
+                c.drawImage(this.imageRight[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
         else
         {
             c.fillStyle = 'red';
@@ -35,19 +56,19 @@ class Player {
         }
     }
     actions(walls) {
-        this.move (walls);
-        this.makeWalls(walls);
+        this.move ();
+        this.makeWalls();
     }
     drawWall ()
     {
         if (this.mode == "wall")
         {
             c.globalAlpha = .25;
-            this.tempWall.wall.draw();
+            this.tempWall.draw();
             c.globalAlpha = 1;
         }
     }
-    makeWalls (walls)
+    makeWalls ()
     {
         if (keys.get("q")){
             if (this.mode!="wall")
@@ -63,28 +84,30 @@ class Player {
             if (keys.get("r"))
             {
                 keys.set("r",false);
+                
                 this.tempWall.orientation = (this.tempWall.orientation+1)%2;
+                console.log(this.tempWall.orientation);
             }
 
             if (this.tempWall.orientation == 0){
-                this.tempWall.wall.position.x1 = Math.round((mouse.x+center.x-canvas.width/2-100/2)/100)*100;
-                this.tempWall.wall.position.x2 = Math.round((mouse.x+center.x-canvas.width/2-100/2)/100)*100+100;
-                this.tempWall.wall.position.y1 = Math.round((mouse.y+center.y-canvas.height/2)/100)*100;
-                this.tempWall.wall.position.y2 = Math.round((mouse.y+center.y-canvas.height/2)/100)*100;
+                this.tempWall.position.x1 = Math.round((mouse.x+center.x-canvas.width/2-100/2)/100)*100;
+                this.tempWall.position.x2 = Math.round((mouse.x+center.x-canvas.width/2-100/2)/100)*100+100;
+                this.tempWall.position.y1 = Math.round((mouse.y+center.y-canvas.height/2)/100)*100;
+                this.tempWall.position.y2 = Math.round((mouse.y+center.y-canvas.height/2)/100)*100;
             }
             if (this.tempWall.orientation == 1){
-                this.tempWall.wall.position.x1 = Math.round((mouse.x+center.x-canvas.width/2)/100)*100;
-                this.tempWall.wall.position.x2 = Math.round((mouse.x+center.x-canvas.width/2)/100)*100;
-                this.tempWall.wall.position.y1 = Math.round((mouse.y+center.y-canvas.height/2-100/2)/100)*100;
-                this.tempWall.wall.position.y2 = Math.round((mouse.y+center.y-canvas.height/2-100/2)/100)*100+100;
+                this.tempWall.position.x1 = Math.round((mouse.x+center.x-canvas.width/2)/100)*100;
+                this.tempWall.position.x2 = Math.round((mouse.x+center.x-canvas.width/2)/100)*100;
+                this.tempWall.position.y1 = Math.round((mouse.y+center.y-canvas.height/2-100/2)/100)*100;
+                this.tempWall.position.y2 = Math.round((mouse.y+center.y-canvas.height/2-100/2)/100)*100+100;
             }
 
 
             if (keys.get("mouse")){
-                this.tempWall.wall.makeID();
-                if (this.tempWall.wall.touchingPlayer(this)==false&&addWall(this.tempWall.wall))
+                this.tempWall.makeID();
+                if (this.tempWall.touchingPlayer(this)==false&&addWall(this.tempWall))
                 {
-                    this.tempWall.wall = new Wall();
+                    this.tempWall = new Wall(0,0,0,0,true,true,this.tempWall.orientation);
                 }
             }
         }    
@@ -96,31 +119,29 @@ class Player {
         let cx = this.position.x
         let cy = this.position.y
         if (movementKeys[0]=="d")//move right
-            {this.position.x+=this.speed; this.direction = "right";this.lastImage++;}
+            {this.position.x+=this.speed; this.direction = "right";}
         if (movementKeys[0]=="a")//move left
-            {this.position.x-=this.speed; this.direction = "left"; this.lastImage++;}
+            {this.position.x-=this.speed; this.direction = "left"; }
         wallsX.forEach( a => a.collisionX(this));
         onScreenElements.forEach( a => {if(a!=null)a.collisionX(this)});
         if (movementKeys[0]=="w")//move up
-            {this.position.y-=this.speed; this.direction= "up";this.lastImage++;}
+            {this.position.y-=this.speed; this.direction= "up"; }
         if (movementKeys[0]=="s")//move down
-            {this.position.y+=this.speed;this.direction = 'down';this.lastImage++;}
+            {this.position.y+=this.speed;this.direction = 'down'; }
         wallsY.forEach( a => a.collisionY(this)); 
-
-
         onScreenElements.forEach( a => {if(a!=null)a.collisionY(this)});
 
         center.x = this.position.x + this.width/2;
         center.y = this.position.y + this.height/2;
 
-        if (this.lastImage > 20)
+        if (this.lastImage++ > 20)
         {
             this.lastImage = 0;
             this.imageIndex ++;
             if (this.imageIndex == 4)
                 this.imageIndex = 0;
         }
-        if (cx == this.position.x && cy == this.position.y)
+        if (!this.inPickUp&&cx == this.position.x && cy == this.position.y)
         {
             this.imageIndex=1;
             this.lastImage=0;
@@ -173,7 +194,6 @@ class Mana{
                     {
                         temp = false;
                         a.reverseMeter += 40;
-                        
                     }
             }
             ));
@@ -193,9 +213,11 @@ class Mana{
     }
 }
 class Wall{
-    constructor(px,py, px2, py2, see, touch) {
+    constructor(px,py, px2, py2, see, touch, orientation) {
+        this.orientation = orientation;
         let x = px;
         let y = py;
+
         this.see= see;
         this.touch=touch;
         this.position = {
@@ -203,22 +225,29 @@ class Wall{
             y1:y,
             x2:px2,
             y2:py2,
-            y:y-5
-        }
+
+    }
         this.height = 10;
         this.thickness = 10;
         this.health=150;
-        
+
+        this.image1 = document.getElementById("fence-across");
+
+        this.image2 = document.getElementById("fence-up");
     }
     makeID()
-    {       
+    {
+
          this.id = parseInt(""+0+this.position.x1+this.position.y1+this.position.x2+this.position.y2);
+         this.position.y = this.position.y2 + 10;
     }
     draw () {
         if (!(this.see==false))
         {
-            c.fillStyle = 'red';
-            c.fillRect(this.position.x1 - this.thickness/2 - center.x + canvas.width/2, this.position.y1 - this.thickness/2 - center.y + canvas.height/2, this.position.x2 - this.position.x1 + this.thickness, this.position.y2 - this.position.y1 + this.thickness);
+            if (this.orientation == 0)
+                c.drawImage(this.image1, this.position.x1 - center.x +canvas.width/2, this.position.y1 - 25  - center.y +canvas.height/2);
+            else
+                c.drawImage(this.image2, this.position.x1 - 10 - center.x +canvas.width/2, this.position.y1  - center.y +canvas.height/2);
         }
     }
     collisionX(player){
@@ -301,7 +330,6 @@ class Tile{
     {
         c.drawImage(this.image, this.position.x - center.x +canvas.width/2,this.position.y - center.y +canvas.height/2);
         this.objects.forEach(a=> {if (a!=null) onScreenElements.push(a)});
-        this.objects.forEach(a=> {if (a!=null) a.pickup(this)});
     }
     makeID()
     {
@@ -404,7 +432,7 @@ class Tree{
         this.health = 5;
         this.image = document.getElementById("tree");
         this.timer=0;
-        this.pickupTime=100;
+        this.pickupTime=79;
     }
     draw()
     {
@@ -464,6 +492,7 @@ class Tree{
                     tile.objects.splice(tile.objects.indexOf(this),1)
             }
             this.timer++;
+            p.inPickUp = true;
         }
         else
             this.timer = 0;
@@ -482,7 +511,7 @@ class Flower{
         this.pickupFrames = 150;
         this.isTouchingPlayer = false;
         this.timer=0;
-        this.pickupTime=100;
+        this.pickupTime=79;
         switch(Math.floor(Math.random()*3))
         {
             case 0:
@@ -509,6 +538,7 @@ class Flower{
     {
         if(keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 2))
         {
+            p.inPickUp = true;
             if (this.timer==0)
             {
                 movementKeys.length = 0;
@@ -528,7 +558,6 @@ class Flower{
                     icon.push(new Icon(this.position.x+25,this.position.y+20, Math.cos(deg)*1.5,Math.sin(deg)*1.5,50,100,this.id));
             }
             this.timer++;
-
         }
         else
             this.timer=0;
@@ -868,8 +897,11 @@ function shootMana()
 function drawText()
 {
     c.fillStyle = "black";
-    c.font= "25px Impact";
+    c.font= "20px Impact";
     c.textAlign = "left";
+
+    c.drawImage(document.getElementById("wood-icon"),20,32);
+    c.drawImage(document.getElementById("mana"),0,0,40,40,22,82,25,25);
 
     c.fillText(": "+materials.wood,50,50);
     c.fillText(": "+materials.mana,50,100);
@@ -975,6 +1007,8 @@ function renderTiles()
             else
             {
                 tiles.get(""+x+"a"+y).draw();
+                tiles.get(""+x+"a"+y).objects.forEach(a=> {if (a!=null) a.pickup(tiles.get(""+x+"a"+y))});
+
             }
         }
     }
@@ -994,13 +1028,12 @@ function renderTiles()
 let temp = 0;
 function animate()
 {
-    
+    p.inPickUp = false;
     const start = performance.now();
     c.clearRect(0,0,canvas.width,canvas.height)
     
     renderTiles();
     mana.forEach( a=> a.move())
-    p.actions();
     weeds.forEach(a => a.makeVines());
 
 
@@ -1011,6 +1044,8 @@ function animate()
     drawElements.push(p)
     walls.forEach( a => drawElements.push(a));
     drawElements.sort(compareHeight);
+    p.actions();
+
     drawElements.forEach(a => a.draw());
     
     
