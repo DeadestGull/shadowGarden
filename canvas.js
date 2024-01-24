@@ -458,7 +458,7 @@ class Tree{
                  for(let i =0; i<Math.floor(Math.random()*4+1);i++)
                  {
                     let deg = Math.random()*Math.PI*2;
-                     icon.push(new WoodIcon(this.position.x+25,this.position.y+20, Math.cos(deg)*1.5,Math.sin(deg)*1.5));
+                    icon.push(new Icon(this.position.x+25,this.position.y+20, Math.cos(deg)*1.5,Math.sin(deg)*1.5,50,50,"wood-icon"));
                  }
                 if (this.health<=0)
                     tile.objects.splice(tile.objects.indexOf(this),1)
@@ -487,12 +487,15 @@ class Flower{
         {
             case 0:
                 this.image = document.getElementById("blue_flower");
+                this.id="blue_flower";
                 break;
             case 1:
                 this.image = document.getElementById("yellow_flower");
+                this.id="yellow_flower";
                 break;
             default:
                 this.image = document.getElementById("pink_flower");
+                this.id="pink_flower";
                 break;
         }
     }
@@ -521,7 +524,8 @@ class Flower{
                     tile.objects.splice(tile.objects.indexOf(this),1)
                     this.timer=0;
                     keys.set("e",false);
-                    materials.mana+=10;
+                    let deg = Math.random()*Math.PI*2;
+                    icon.push(new Icon(this.position.x+25,this.position.y+20, Math.cos(deg)*1.5,Math.sin(deg)*1.5,50,100,this.id));
             }
             this.timer++;
 
@@ -729,10 +733,14 @@ class Vine{
     }
 }
 const wallCost = 2;
-class WoodIcon
+class Icon
 {
-    constructor (x, y, vx, vy)
+    constructor (x, y, vx, vy, tx, ty ,id)
     {
+        this.image = document.getElementById(id);
+        this.tx=tx;
+        this.ty=ty;
+        this.id=id;
         this.position = {
             x:x,
             y:y
@@ -764,19 +772,26 @@ class WoodIcon
         }
         if (this.velocity.x == 0 && this.velocity.y == 0)
         {
-            let tx=50;
-            let ty=50;
-            let yomom=Math.atan2(this.position.y-ty-center.y+canvas.height/2,this.position.x-tx-center.x+canvas.width/2);
-            this.position.x+=Math.cos(yomom);
-            this.position.x+=Math.sin(yomom);
+            let yomom=Math.atan2(this.position.y-this.ty-center.y+canvas.height/2,this.position.x-this.tx-center.x+canvas.width/2);
+            this.position.x-=Math.cos(yomom)*10;
+            this.position.y-=Math.sin(yomom)*10;
+            if(Math.abs(this.position.x-this.tx-center.x+canvas.width/2)<10 && Math.abs(this.position.y-this.ty-center.y+canvas.height/2)<10)
+            {
+                if(this.id=="wood-icon")
+                    materials.wood++;
+                else
+                    materials.mana+=5;
+
+                icon.splice(icon.indexOf(this),1);
+            }
         }
     }
     draw()
     {
-        c.beginPath();
-        c.arc(this.position.x - center.x + canvas.width/2 ,this.position.y - center.y +canvas.height/2,13,0,Math.PI*2);
-        c.fillStyle="red";
-        c.fill();
+        if(this.id=="wood-icon")
+            c.drawImage(this.image,this.position.x-center.x+canvas.width/2,this.position.y-center.y+canvas.height/2);
+        else
+            c.drawImage(this.image,0,0,40,40,this.position.x-center.x+canvas.width/2,this.position.y-center.y+canvas.height/2,30,30);
     }
 
 }
