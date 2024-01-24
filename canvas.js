@@ -1191,8 +1191,8 @@ function tutorial()
     }
 }
 
-let inbetween = 500;
-let wave = 5;
+let inbetween = 45;
+let wave = 1;
 let spawned = false
 function weedTimer(){
     if (Math.ceil(inbetween-timer) + 1 == 0)
@@ -1332,7 +1332,7 @@ tiles.set(lifeTree.id, lifeTree);
 var canvas = document.querySelector('canvas');
 var c =canvas.getContext("2d");
 
-let tutorialStage = 20;
+let tutorialStage = 0;
 
 resizeCanvas();
 let timer = 0;
