@@ -1161,11 +1161,11 @@ function tutorial()
         if (weeds.length==0)
             tutorialStage +=.5
     }
-
     if (tutorialStage==19)
     {
-        tutorialText("Good Luck!", 150 ,true)
-        tutorialStage+=.5;
+        tutorialText("Thats Everything You Need To Know Good Luck Saving This Planet",250,false)
+        tutorialStage+=.5
+
     }
     if (tutorialStage==20)
     {
