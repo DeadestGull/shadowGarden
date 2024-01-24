@@ -457,7 +457,7 @@ class Tree{
                 this.timer=0;
                  for(let i =0; i<Math.floor(Math.random()*4+1);i++)
                  {
-                     icon.push(WoodIcon(this.position.x,this.position.y, Math.random()*4-2,Math.random()*4-2));
+                     icon.push(new WoodIcon(this.position.x,this.position.y, Math.random()*4-2,Math.random()*4-2));
                  }
                 if (this.health<=0)
                     tile.objects.splice(tile.objects.indexOf(this),1)
@@ -566,7 +566,6 @@ class Weed{
         let i = 0
         for (i=0; i<this.vines.length; i++)
         {
-            console.log(this.vines[i].isTarget(),(this.vines[i].dir == "up"|| this.vines[i].dir== "down"),this.vines.length<2);
 
             
             if (!this.vines[i].isFull())
@@ -666,7 +665,6 @@ class Vine{
         }
     isTarget()
     {
-        console.log (this.position.y2,this.position.x2,this.target)
         if (this.dir == "up"|| this.dir == "down")
             return this.position.y2 == this.target;
         else
@@ -772,7 +770,7 @@ class WoodIcon
     draw()
     {
         c.beginPath();
-        c.arc(this.position.x,this.position.y,13,0,Math.PI*2);
+        c.arc(this.position.x - center.x + canvas.width/2 ,this.position.y - center.y +canvas.height/2,13,0,Math.PI*2);
         c.fillStyle="red";
         c.fill();
     }
