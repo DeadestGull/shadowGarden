@@ -457,7 +457,7 @@ class Tree{
                 this.timer=0;
                  for(let i =0; i<Math.floor(Math.random()*4+1);i++)
                  {
-                    icon.push(WoodIcon(this.position.x,this.position.y, Math.random()*4-2,Math.random()*4-2));
+                     icon.push(WoodIcon(this.position.x,this.position.y, Math.random()*4-2,Math.random()*4-2));
                  }
                 if (this.health<=0)
                     tile.objects.splice(tile.objects.indexOf(this),1)
@@ -999,8 +999,8 @@ function animate()
     
 
 
-
-    
+    icon.forEach(a=>a.move())
+    icon.forEach(a=>a.draw())
     p.drawWall();
     mana.forEach(a=> a.draw());
     drawText();
