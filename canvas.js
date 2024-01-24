@@ -1,4 +1,3 @@
-//hi
 class Player {
     constructor(px, py) {
         this.position = {
@@ -173,7 +172,7 @@ class Mana{
                     if (temp&&isIntersectingCircle(this.position.x,this.position.y, this.size/2, b.position.x1, b.position.y1, b.position.x2, b.position.y2))
                     {
                         temp = false;
-                        a.reverseMeter += 80;
+                        a.reverseMeter += 40;
                         
                     }
             }
@@ -597,7 +596,7 @@ class Weed{
                 if (this.position.y > tree.position.x)
                     this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width, tree.position.x + tree.width/2 +this.width, this.position.y, tree.position.y + tree.height, "up"));
                 else
-                    this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width, tree.position.x + tree.width/2 +this.width, this.position.y, tree.position.y, "down"));
+                    this.vines.push(new Vine(tree.position.x + tree.width/2 - this.width + 10, tree.position.x + tree.width/2 +this.width + 10, this.position.y, tree.position.y, "down"));
 
                 if (this.vines[i].nutrients<0)
                     this.vines.splice(this.vines.indexOf(this.vines[i]),1);
@@ -609,7 +608,7 @@ class Weed{
         if (this.vines.length>0&&this.reverseMeter>0)
         {
             this.reverseMeter-=1;
-            this.vines[this.vines.length-1].nutrients-=2;
+            this.vines[this.vines.length-1].nutrients-=5;
         }
         if (i!=0&&i == this.vines.length)
             life.health--;
@@ -645,6 +644,9 @@ class Vine{
         this.dir = dir;
         this.nutrients = 20;
         this.width = 20;
+        this.imageAcross =  document.getElementById("vine-across");
+        this.imageUp =  document.getElementById("vine-up");
+
     }
     update(i)
     {
@@ -675,25 +677,56 @@ class Vine{
     }
     draw()
     {
+        let tempY = 0;
+        let tempX = 0;
+        let tempSize = this.nutrients;
         c.fillStyle = "yellow";
         switch(this.dir)
         {
             case "up":
-                c.fillRect(this.position.x1- center.x +canvas.width/2, this.position.y2- center.y +canvas.height/2, this.width, this.nutrients);
+                tempY = this.position.y2;
+                while (tempSize > 100)
+                {
+                    c.drawImage(this.imageUp, this.position.x1- center.x +canvas.width/2, tempY- center.y +canvas.height/2);
+                    tempY += 100;
+                    tempSize -= 100;
+                }
+                c.drawImage(this.imageUp,0,0,20,tempSize, this.position.x1- center.x +canvas.width/2, tempY- center.y +canvas.height/2,this.width,tempSize)
                 break;
             case "down":
-                c.fillRect(this.position.x1- center.x +canvas.width/2, this.position.y1- center.y +canvas.height/2, this.width, this.nutrients);
+                tempY = this.position.y1;
+                while(tempSize>100)
+                {
+                    c.drawImage(this.imageUp, this.position.x1- center.x +canvas.width/2, tempY- center.y +canvas.height/2)
+                    tempY += 100;
+                    tempSize -= 100;
+                }
+                c.drawImage(this.imageUp,0,0,20,tempSize, this.position.x1- center.x +canvas.width/2, tempY- center.y +canvas.height/2,this.width,tempSize)
                 break;
             case "left":
-                c.fillRect(this.position.x2- center.x +canvas.width/2 , this.position.y1- center.y +canvas.height/2, this.nutrients, this.width);
+                tempX = this.position.x2; 
+                while(tempSize>100)
+                {
+                    c.drawImage(this.imageAcross, tempX - center.x + canvas.width/2, this.position.y1 - center.y +canvas.height/2)
+                    tempX +=100;
+                    tempSize -=100;
+                }
+                c.drawImage(this.imageAcross, 0,0, tempSize,this.width, tempX - center.x + canvas.width/2, this.position.y1 - center.y +canvas.height/2,tempSize, this.width);
                 break;    
             case "right":
-                c.fillRect(this.position.x1- center.x +canvas.width/2 , this.position.y1- center.y +canvas.height/2, this.nutrients, this.width); 
+                tempX = this.position.x1; 
+                while(tempSize>100)
+                {
+                    c.drawImage(this.imageAcross, tempX - center.x + canvas.width/2, this.position.y1 - center.y +canvas.height/2)
+                    tempX +=100;
+                    tempSize -=100;
+                }
+                c.drawImage(this.imageAcross, 0,0, tempSize,this.width, tempX - center.x + canvas.width/2, this.position.y1 - center.y +canvas.height/2,tempSize, this.width);
                 break;
         }
     }
 }
-const wallCost = 0;
+const wallCost = 2;
 
 function addWall(wall){
     if (materials.wood<wallCost)
@@ -906,13 +939,14 @@ function animate()
 
     onScreenElements.forEach(a=> {if(a!=null)
                                     drawElements.push(a)});
+    weeds.forEach( a => drawElements.push(a));
+
     drawElements.push(p)
     walls.forEach( a => drawElements.push(a));
     drawElements.sort(compareHeight);
     drawElements.forEach(a => a.draw());
     
     
-    weeds.forEach( a => a.draw());
 
 
 
@@ -1090,8 +1124,8 @@ function tutorial()
     }
 }
 
-let inbetween = 45;
-let wave = 1;
+let inbetween = 5;
+let wave = 5;
 let spawned = false
 function weedTimer(){
     if (Math.ceil(inbetween-timer) + 1 == 0)
@@ -1231,7 +1265,7 @@ tiles.set(lifeTree.id, lifeTree);
 var canvas = document.querySelector('canvas');
 var c =canvas.getContext("2d");
 
-let tutorialStage = 0;
+let tutorialStage = 20;
 
 resizeCanvas();
 let timer = 0;
