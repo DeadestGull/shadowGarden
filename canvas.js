@@ -23,8 +23,6 @@ class Player {
         this.lastImage = 0;
     }
     draw () {
-        
-
         if (this.direction == "up")
             if (this.inPickUp)
                 c.drawImage(this.imageUp[1], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
@@ -40,8 +38,10 @@ class Player {
                 c.drawImage(this.imageLeftPickUp[this.imageIndex], canvas.width/2 - this.width/2 -19, canvas.height/2 - this.height/2 - 40);
             else if (this.inPickUp)
                 c.drawImage(this.imageLeft[1], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
-            else
+            else if (this.imageIndex==1||this.imageIndex==3)
                 c.drawImage(this.imageLeft[this.imageIndex], canvas.width/2 - this.width/2, canvas.height/2 - this.height/2 - 40);
+            else
+                c.drawImage(this.imageLeft[this.imageIndex], canvas.width/2 - this.width/2-10, canvas.height/2 - this.height/2 - 40);
         else if (this.direction == "right")
             if (this.inPickUp&&this.imageIndex!=0)
                 c.drawImage(this.imageRightPickUp[this.imageIndex], canvas.width/2 - this.width/2 - 13, canvas.height/2 - this.height/2 - 40);
@@ -193,7 +193,7 @@ class Mana{
                     if (temp&&isIntersectingCircle(this.position.x,this.position.y, this.size/2, b.position.x1, b.position.y1, b.position.x2, b.position.y2))
                     {
                         temp = false;
-                        a.reverseMeter += 40;
+                        a.reverseMeter += 50;
                     }
             }
             ));
@@ -229,7 +229,7 @@ class Wall{
     }
         this.height = 10;
         this.thickness = 10;
-        this.health=150;
+        this.health=500;
 
         this.image1 = document.getElementById("fence-across");
 
@@ -310,7 +310,7 @@ let lastTree = 0;
 let lastFlower = 0;
 let lastForest = 0;
 let nextTree = generateNormallyDistributedRandom(5,30);
-let nextFlower = generateNormallyDistributedRandom(5,15);
+let nextFlower = generateNormallyDistributedRandom(5,10);
 class Tile{
     constructor(x1,y1,objects)
     {
@@ -357,7 +357,7 @@ class Tile{
                 this.objects.push(temp);
             }
             lastTree = 0;
-            nextTree = generateNormallyDistributedRandom(5,45);
+            nextTree = generateNormallyDistributedRandom(5,40);
         }
         else if (nextFlower <= lastFlower)
         {
@@ -378,7 +378,7 @@ class Tile{
             if (!isIntersecting(tempX,tempX + temp.width, tempY, tempY + temp.height, ltree[0].position.x, ltree[0].position.x + ltree[0].height, ltree[0].position.y, ltree[0].position.y + ltree[0].height,10))
                 this.objects.push(temp);
             lastFlower = 0;
-            nextFlower = generateNormallyDistributedRandom(5,15);
+            nextFlower = generateNormallyDistributedRandom(5,10);
         }        
         lastTree++;
         lastFlower++;
@@ -392,29 +392,54 @@ class LifeTree {
             x:x,
             y:y,
         };
+        this.cwidth = 50;
         this.width = 200;
         this.height = 200; 
-        this.health = 1000;
+        this.health = 5000;
         this.image = document.getElementById("lifetree");
 
     }
     draw()
-    {     
+    {    
         c.drawImage(this.image, this.position.x - center.x +canvas.width/2,this.position.y - center.y +canvas.height/2-55);
+        c.fillStyle = "red";
+        c.fillRect(this.position.x - center.x + canvas.width /2 + 55,this.position.y - center.y +canvas.height/2 - 55,99, 15)
+        c.fillStyle = "green";
+        c.fillRect(this.position.x - center.x + canvas.width /2 + 55,this.position.y - center.y +canvas.height/2 - 55, this.health/50, 15)
     }
     heal()
     {
-        this.health+=50;
-        if (this.health > 1000)
-            this.health = 1000;
+        this.health+=500;
+        if (this.health > 5000)
+            this.health = 5000;
     }
     collisionX()
     {
-        
+        if (p.position.y+p.height>this.position.y && p.position.y<this.position.y + this.height)
+        {
+            if (p.position.x + p.width > this.position.x + 75&& p.position.x + p.width < this.position.x + 75+ this.cwidth) //left
+            {
+                p.position.x = this.position.x + 75- p.width;
+            }
+            if (p.position.x > this.position.x+ 75 && p.position.x < this.position.x + 75 + this.cwidth) //right
+            {
+                p.position.x = this.position.x+ 75 + this.cwidth;
+            }
+        }
     }
     collisionY()
     {
-       
+        if (p.position.x+p.width>this.position.x + 75  && p.position.x<this.position.x + 75+ this.cwidth)
+        {
+            if (p.position.y + p.height > this.position.y && p.position.y < this.position.y) //top
+            {
+                p.position.y = this.position.y - p.height;
+            }
+            if (p.position.y > this.position.y && p.position.y < this.position.y +this.height) //bottom
+            {
+                p.position.y = this.position.y +this.height;
+            }
+        }
     }
     pickup(){}
 }
@@ -488,6 +513,8 @@ class Tree{
                     let deg = Math.random()*Math.PI*2;
                     icon.push(new Icon(this.position.x+25,this.position.y+20, Math.cos(deg)*1.5,Math.sin(deg)*1.5,50,50,"wood-icon"));
                  }
+                 if (tutorialStage <8)
+                    keys.set("e",false);
                 if (this.health<=0)
                     tile.objects.splice(tile.objects.indexOf(this),1)
             }
@@ -604,7 +631,7 @@ class Weed{
             
             if (!this.vines[i].isFull())
             {
-                this.vines[i].update(1);
+                this.vines[i].update(.5);
                 let intersect =false;
                 walls.forEach(a => {    
                     if(isIntersecting(this.vines[i].position.x1,this.vines[i].position.x2,this.vines[i].position.y1, this.vines[i].position.y2, a.position.x1-a.thickness/2, a.position.x2+a.thickness/2, a.position.y1-a.thickness/2, a.position.y2+a.thickness/2,0))
@@ -809,7 +836,7 @@ class Icon
                 if(this.id=="wood-icon")
                     materials.wood++;
                 else
-                    materials.mana+=5;
+                    materials.mana+=10;
 
                 icon.splice(icon.indexOf(this),1);
             }
@@ -1065,12 +1092,7 @@ function animate()
     tilesTouching.length=0;
     manaDelay ++;
 
-    if (life.health<=0)
-    {
-        c.fillStyle = 'red';
-        c.fillRect(0,0,canvas.width, canvas.height);
-        clearInterval(myInterval);
-    }
+    
     if (startTimer==false)
     {
         tutorial();
@@ -1078,6 +1100,25 @@ function animate()
     }
     else
         weedTimer();
+    if (life.health<=0)
+    {
+        endScreen();
+        c.fillStyle = "red";
+        c.font= "bold 72px serif";
+        c.textAlign = "Left";
+        c.fillText("You Kept The Planet Alive For "+wave+" Waves",canvas.width-650,canvas.height-50);
+        clearInterval(myInterval);
+        
+    }
+    if (wave == 5 && spawned == false)
+    {
+        
+        endScreen();
+        clearInterval(myInterval);
+        
+    }
+
+
     const end = performance.now();
 }
 function gameSetUp()
@@ -1088,7 +1129,22 @@ function gameSetUp()
     addEventListener("keyup",up);
     addEventListener("keydown",down);
     window.onload = window.onresize = resizeCanvas;
-    myInterval= setInterval(animate,16);
+    myInterval= setInterval(startScreen,16);
+}
+function startScreen()
+{
+    c.drawImage(document.getElementById("start"),0,0,960,540,0,0,canvas.width,canvas.height);
+    c.drawImage(document.getElementById("button"),0,0,300,150, canvas.width/2 - 250, canvas.height/2, 500 , 300)
+    if (keys.get("mouse")&&mouse.x > canvas.width/2 - 250 && mouse.x < canvas.width/2+250 && mouse.y > canvas.height/2&& mouse.y<canvas.height/2+300)
+    {
+        clearInterval(myInterval);
+        myInterval =setInterval(animate,16);
+    }    
+
+}
+function endScreen()
+{
+    c.drawImage(document.getElementById("end"),0,0,960,540,0,0,canvas.width,canvas.height);
 }
 function compareHeight(a,b)
 {  
@@ -1110,6 +1166,7 @@ function tutorial()
         tutorialStage+=.5;
         tutorialText("This Magical Tree Give Life This World", 100,false);
     }
+    
     if (tutorialStage==2)
     {
         tutorialStage+=.5;
@@ -1118,115 +1175,123 @@ function tutorial()
     if (tutorialStage==3)
     {
         tutorialStage+=.5;
-        tutorialText("Your Job Is To Ward Of The Weeds", 100 ,false);
+        tutorialText("Its Health Is The Green Bar On Top ", 100,false);
     }
     if (tutorialStage==4)
+    {
+        tutorialStage+=.5;
+        tutorialText("Your Job Is To Ward Of The Weeds To Prevent It From Running Out Of Health", 100 ,false);
+    }
+    if (tutorialStage==5)
     {
         tutorialText("Use WASD To Move", 150, true);
         if (keys.get("a")||keys.get("s")||keys.get("d")||keys.get("w"))
             tutorialStage+=.5;
     }
-    if (tutorialStage==5)
+    if (tutorialStage==6)
     {
         tutorialStage+=.5;
         tutorialText("Lets Learn How To Harvest Wood", 150, false);
         temp = materials.wood;
     }
-    if (tutorialStage==6)
+    if (tutorialStage==7)
     {
-        tutorialText("Travel To A Tree And Hold E", 50, true);
+        tutorialText("Travel To A Tree And Hold E", 30, true);
         if (materials.wood>temp)
-        {
-            tutorialStage+=.5;
+        {            
             keys.set("e",false);
+            tutorialStage+=.5;
         }
     }
-    if (tutorialStage==7)
+    if (tutorialStage==8)
     {
         tutorialStage+=.5;
         tutorialText("A Tree Can Be Harvest A Few Times Before Breaking", 150, false)
     }
-    if (tutorialStage==8)
+    if (tutorialStage==9)
     {
         tutorialText("Now Harvest 5 Wood", 50, true)
         if (materials.wood>=5)
             tutorialStage+=.5;
     }
-    if (tutorialStage==9)
+    if (tutorialStage==10)
     {
         tutorialText("To Build A Wall Press Q", 25, true)
         if (p.mode=="wall")
             tutorialStage+=.5
     }
-    if (tutorialStage==10)
+    if (tutorialStage==11)
     {
-        tutorialText("Now Move Your Mouse To Position The Walls Then Click To Place", 45, true)
+        tutorialText("Use 2 Wood To Build A Wall By Moving Your Mouse To The Position Then Clicking", 45, true)
         if (walls.length>0)
             tutorialStage+=.5;
     }
-    if (tutorialStage==11)
+    if (tutorialStage==12)
     {
         tutorialText("Walls Can Be Also Rotated When Placing By Pressing R", 50, true)
         if (p.tempWall.orientation == 1)
             tutorialStage+=.5
     }
-    if (tutorialStage==12)
+    if (tutorialStage==13)
     {
         tutorialText("To Stop Building Walls Press Q Again", 50, true)
         if (p.mode!="wall")
             tutorialStage+=.5
     }
-    if (tutorialStage==13)
+    if (tutorialStage==14)
     {
         tutorialText("Now Lets Harvest Flowers", 50, false)
         tutorialStage+=.5
         temp = materials.mana;
     }
-    if (tutorialStage==14)
+    if (tutorialStage==15)
     {
         tutorialText("Travel to A Flower And Hold E", 50, true)
         if (materials.mana> temp)
             tutorialStage+=.5;
     }
-    if (tutorialStage==15)
+    if (tutorialStage==16)
     {
         tutorialText("Gathering Flowers Gives You Mana", 150, false);
         tutorialStage+=.5
     }
-    if (tutorialStage==16)
+    if (tutorialStage==17)
     {
         tutorialText("It Can Be Used For Healing Life Tree Along With Repelling The Weeds", 250 ,false)
         tutorialStage+=.5
     }
-    if (tutorialStage==17)
+    if (tutorialStage==18)
     {
         tutorialText("Speaking of Weeds One Just Appeared", 150, true)
+        for (let i = materials.mana; i<100; i+=10){
+            let deg = Math.random()*Math.PI*2;
+            icon.push(new Icon(p.position.x+25,p.position.y+20, Math.cos(deg)*1.5,Math.sin(deg)*1.5,50,100,"mana"));
+        }
         weeds.push(new Weed(11050,10000));
         weeds[0].makePath();
         tutorialStage+=.5
-        materials.mana = 100;
     }
-    if (tutorialStage==18)
+    if (tutorialStage==19)
     {
         tutorialText("Quickly Deal With It By Going Next To It And Pressing F To Use Mana",50,false)
 
         if (weeds.length==0)
             tutorialStage +=.5
     }
-    if (tutorialStage==19)
+    if (tutorialStage==20)
     {
         tutorialText("Thats Everything You Need To Know Good Luck Saving This Planet",250,false)
         tutorialStage+=.5
 
     }
-    if (tutorialStage==20)
+    if (tutorialStage==21)
     {
         startTimer = true;
         tutorialStage++;
     }
 }
 
-let inbetween = 45;
+let inbetween = 30;
 let wave = 1;
 let spawned = false
 function weedTimer(){
@@ -1254,8 +1319,8 @@ function weedTimer(){
             weeds[i].makePath();
         } 
         c.font= "bold 36px serif";
-        c.textAlign = "right";
-        c.fillText("Wave: "+wave,canvas.width-50,50);
+        c.textAlign = "center";
+        c.fillText("Wave: "+wave,canvas.width/2,50);
         spawned= true;
         if (spawned&&weeds.length == 0)
         {
@@ -1267,8 +1332,8 @@ function weedTimer(){
     else
     {
         c.font= "bold 36px serif";
-        c.textAlign = "right";
-        c.fillText("Next Wave In "+Math.ceil(inbetween-timer)+ " Seconds",canvas.width-50,50);    
+        c.textAlign = "center";
+        c.fillText("Next Wave In "+Math.ceil(inbetween-timer)+ " Seconds",canvas.width/2,50);    
         timer += .016;
     }
     
