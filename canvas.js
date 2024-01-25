@@ -1,3 +1,4 @@
+let end = false;
 class Player {
     constructor(px, py) {
         this.position = {
@@ -161,7 +162,7 @@ class Mana{
             x:vx,
             y:vy
         }
-        this.size = 25;
+        this.size = 30;
         this.timer = 0;
 
     }
@@ -209,7 +210,7 @@ class Mana{
     }
     draw()
     {
-        c.drawImage(this.image, this.position.x - center.x +canvas.width/2 - this.size/2,this.position.y - center.y +canvas.height/2-this.size/2);
+        c.drawImage(this.image, this.position.x - center.x +canvas.width/2 - 25/2,this.position.y - center.y +canvas.height/2-25/2);
     }
 }
 class Wall{
@@ -539,6 +540,7 @@ class Flower{
         this.isTouchingPlayer = false;
         this.timer=0;
         this.pickupTime=79;
+        this.hide = 0;
         switch(Math.floor(Math.random()*3))
         {
             case 0:
@@ -559,11 +561,12 @@ class Flower{
     collisionY(){}
     draw()
     {  
+        if (this.hide == 0)
         c.drawImage(this.image, this.position.x - center.x +canvas.width/2 ,this.position.y - center.y +canvas.height/2);
     }
     pickup(tile)
     {
-        if(keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 2))
+        if(this.hide==0&&keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 2))
         {
             p.inPickUp = true;
             if (this.timer==0)
@@ -578,7 +581,13 @@ class Flower{
                 keys.set("e",false)
             if (this.timer>=this.pickupTime)
             {
-                    tile.objects.splice(tile.objects.indexOf(this),1)
+                    let temp = Math.floor(Math.random()*4);
+                    if (temp<2)
+                        tile.objects.splice(tile.objects.indexOf(this),1)
+                    if (temp==2)
+                        this.hide=2;
+                    else
+                        this.hide=4;    
                     this.timer=0;
                     keys.set("e",false);
                     let deg = Math.random()*Math.PI*2;
@@ -631,7 +640,13 @@ class Weed{
             
             if (!this.vines[i].isFull())
             {
-                this.vines[i].update(.5);
+                if (wave < 3)
+                    this.vines[i].update(.25);
+                else if (wave >= 6)
+                    this.vines[i].update(1);
+                else
+                    this.vines[i].update(.5);
+
                 let intersect =false;
                 walls.forEach(a => {    
                     if(isIntersecting(this.vines[i].position.x1,this.vines[i].position.x2,this.vines[i].position.y1, this.vines[i].position.y2, a.position.x1-a.thickness/2, a.position.x2+a.thickness/2, a.position.y1-a.thickness/2, a.position.y2+a.thickness/2,0))
@@ -953,7 +968,8 @@ function up (event)
         movementKeys.splice(movementKeys.indexOf(event.key.toLowerCase()),1)
     }
     keys.set(event.key.toLowerCase(),false);
-    
+    if (event.key = "*")
+        tutorialStage = 21;
 }
 let manaDelay = 0;
 function down (event)
@@ -1056,7 +1072,6 @@ let temp = 0;
 function animate()
 {
     p.inPickUp = false;
-    const start = performance.now();
     c.clearRect(0,0,canvas.width,canvas.height)
     
     renderTiles();
@@ -1085,7 +1100,6 @@ function animate()
     drawText();
     
     
-    
 
     drawElements.length=0;
     onScreenElements.length=0;
@@ -1110,16 +1124,14 @@ function animate()
         clearInterval(myInterval);
         
     }
-    if (wave == 5 && spawned == false)
+    if (end)
     {
-        
         endScreen();
         clearInterval(myInterval);
         
     }
 
 
-    const end = performance.now();
 }
 function gameSetUp()
 {
@@ -1273,14 +1285,13 @@ function tutorial()
     }
     if (tutorialStage==19)
     {
-        tutorialText("Quickly Deal With It By Going Next To It And Pressing F To Use Mana",50,false)
-
+        tutorialText("Go Towards The Weed And Press F To Push It Back",50,false)
         if (weeds.length==0)
             tutorialStage +=.5
     }
     if (tutorialStage==20)
     {
-        tutorialText("Thats Everything You Need To Know Good Luck Saving This Planet",250,false)
+        tutorialText("Make Sure To Get Plenty Of Mana Before The Next Wave Starts!",250,false)
         tutorialStage+=.5
 
     }
@@ -1290,7 +1301,6 @@ function tutorial()
         tutorialStage++;
     }
 }
-
 let inbetween = 30;
 let wave = 1;
 let spawned = false
@@ -1298,7 +1308,41 @@ function weedTimer(){
     if (Math.ceil(inbetween-timer) + 1 == 0)
     {
         if (spawned == false)
-        for (let i = 0; i < wave/1.5; i++)
+        {
+            switch (wave)
+            {
+                case 1:
+                    max = 1;
+                    break;
+                case 2:
+                    max = 2;
+                    break;
+                case 3:
+                    max =1;
+                    break;
+                case 4:
+                    max =2;
+                    break;
+                case 5:
+                    max =3;
+                    break;
+                case 6:
+                    max =2;
+                    break;
+                case 7:
+                    max =3;
+                    break;
+                case 8:
+                    max =4;
+                    break;
+                case 9:
+                    max = 5;
+                    break;
+                case 10:
+                    end = true;
+                    break;
+            }
+            for (let i = 0; i < max; i++)
         {
             let changeX = Math.random()*500 + 400;
             let changeY = Math.random()*500 + 400;
@@ -1317,6 +1361,7 @@ function weedTimer(){
                 tempY+=changeY
             weeds.push(new Weed(tempX,tempY));
             weeds[i].makePath();
+        }
         } 
         c.font= "bold 36px serif";
         c.textAlign = "center";
@@ -1327,6 +1372,8 @@ function weedTimer(){
             spawned = false;
             timer = 0;
             wave++;
+            [...tiles].map(([name, value]) => (value)).forEach(a => a.objects.forEach(b => {if (b!=null&&b.constructor.name == "Flower"&&b.hide!=0) b.hide--;}));
+
         }
     }
     else
@@ -1346,7 +1393,11 @@ function addText ()
     if (frames < endFrame || !complete)
     {
         c.fillStyle = "black";
-        c.font= "bold 36px serif";
+        if (canvas.width > 1400)
+
+            c.font= "bold 36px serif";
+        else   
+            c.font ="bold 30px serif";
         c.textAlign = "center";
         c.fillText(text,canvas.width/2,50);
         frames++;
