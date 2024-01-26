@@ -651,7 +651,7 @@ class Weed{
                 walls.forEach(a => {    
                     if(isIntersecting(this.vines[i].position.x1,this.vines[i].position.x2,this.vines[i].position.y1, this.vines[i].position.y2, a.position.x1-a.thickness/2, a.position.x2+a.thickness/2, a.position.y1-a.thickness/2, a.position.y2+a.thickness/2,0))
                     {
-                        a.health--;
+                        a.health-= speed * 4;
                         if (a.health<=0)
                         {
                             walls.splice(walls.indexOf(a),1);
@@ -689,7 +689,7 @@ class Weed{
             this.vines[this.vines.length-1].nutrients-=5;
         }
         if (i!=0&&i == this.vines.length)
-            life.health--;
+            life.health-= speed * 4;
         
     }
     draw(){
@@ -968,7 +968,7 @@ function up (event)
         movementKeys.splice(movementKeys.indexOf(event.key.toLowerCase()),1)
     }
     keys.set(event.key.toLowerCase(),false);
-    if (event.key = "*")
+    if (event.key == "*")
         tutorialStage = 21;
 }
 let manaDelay = 0;
@@ -1303,6 +1303,7 @@ function tutorial()
 }
 let inbetween = 30;
 let wave = 1;
+let speed = .25;
 let spawned = false
 function weedTimer(){
     if (Math.ceil(inbetween-timer) + 1 == 0)
@@ -1312,34 +1313,38 @@ function weedTimer(){
             switch (wave)
             {
                 case 1:
+                    speed = .25;
                     max = 1;
                     break;
                 case 2:
                     max = 2;
                     break;
                 case 3:
-                    max =1;
+                    speed = .5;
+                    max =2;
                     break;
                 case 4:
-                    max =2;
+                    max =3;
                     break;
                 case 5:
-                    max =3;
-                    break;
-                case 6:
-                    max =2;
-                    break;
-                case 7:
-                    max =3;
-                    break;
-                case 8:
                     max =4;
                     break;
+                case 6:
+                    speed = 1;
+                    max =3;
+                    break;
+                case 7:
+                    max =4;
+                    break;
+                case 8:
+                    speed = 2;
+                    max =3;
+                    break;
                 case 9:
-                    max = 5;
+                    max = 4;
                     break;
                 case 10:
-                    end = true;
+                    max = 5;
                     break;
             }
             for (let i = 0; i < max; i++)
@@ -1369,9 +1374,12 @@ function weedTimer(){
         spawned= true;
         if (spawned&&weeds.length == 0)
         {
+            
             spawned = false;
             timer = 0;
             wave++;
+            if (wave == 11)
+                end = true;
             [...tiles].map(([name, value]) => (value)).forEach(a => a.objects.forEach(b => {if (b!=null&&b.constructor.name == "Flower"&&b.hide!=0) b.hide--;}));
 
         }
