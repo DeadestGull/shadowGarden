@@ -566,7 +566,7 @@ class Flower{
     }
     pickup(tile)
     {
-        if(this.hide==0&&keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 2))
+        if(this.hide==0&&keys.get("e")&&isIntersecting(p.position.x , p.position.x+p.width , p.position.y , p.height+p.position.y , this.position.x , this.position.x+this.width,this.position.y , this.position.y+this.height, 7))
         {
             p.inPickUp = true;
             if (this.timer==0)
@@ -640,18 +640,13 @@ class Weed{
             
             if (!this.vines[i].isFull())
             {
-                if (wave < 3)
-                    this.vines[i].update(.25);
-                else if (wave >= 6)
-                    this.vines[i].update(1);
-                else
-                    this.vines[i].update(.5);
+                this.vines[i].update(speed);
 
                 let intersect =false;
                 walls.forEach(a => {    
                     if(isIntersecting(this.vines[i].position.x1,this.vines[i].position.x2,this.vines[i].position.y1, this.vines[i].position.y2, a.position.x1-a.thickness/2, a.position.x2+a.thickness/2, a.position.y1-a.thickness/2, a.position.y2+a.thickness/2,0))
                     {
-                        a.health-= speed * 4;
+                        a.health-= speed * 2;
                         if (a.health<=0)
                         {
                             walls.splice(walls.indexOf(a),1);
@@ -689,7 +684,7 @@ class Weed{
             this.vines[this.vines.length-1].nutrients-=5;
         }
         if (i!=0&&i == this.vines.length)
-            life.health-= speed * 4;
+            life.health-= speed * 2;
         
     }
     draw(){
@@ -1327,10 +1322,10 @@ function weedTimer(){
                     max =3;
                     break;
                 case 5:
-                    max =4;
+                    max =2;
+                    speed= 1
                     break;
                 case 6:
-                    speed = 1;
                     max =3;
                     break;
                 case 7:
